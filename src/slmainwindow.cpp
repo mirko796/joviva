@@ -25,8 +25,6 @@ SLMainWindow::SLMainWindow(QSettings *settings, const Translators& translators, 
     ui->setupUi(this);
     initActions();
     initMainMenu();
-    qDebug()<<ui->btn_load->icon().availableSizes()<<"icon size";
-    setWindowTitle("JovIva - Simple Image Editor");
     connect(ui->graphicsView, &SLGraphicsView::itemsChanged,
             this, &SLMainWindow::onItemsChanged);
     connect(ui->graphicsView, &SLGraphicsView::orientationChanged,
@@ -37,6 +35,7 @@ SLMainWindow::SLMainWindow(QSettings *settings, const Translators& translators, 
     loadFromSettings();
     updateActions();
     updateButtonsTextVisibility();
+    updateWindowTitle();
 }
 
 SLMainWindow::~SLMainWindow()
@@ -58,6 +57,22 @@ void SLMainWindow::loadFromSettings()
             action->trigger();
         }
     }
+}
+
+void SLMainWindow::updateWindowTitle()
+{
+    QString title = QString("JovIva %1 - Simple Image Editor").arg(APP_VERSION);
+    if (m_fileName.size()) {
+        const QString basename = QFileInfo(m_fileName).fileName();
+        title+=QString("(%1)").arg(basename);
+    }
+    setWindowTitle(title);
+}
+
+void SLMainWindow::setFileName(const QString &fileName)
+{
+    m_fileName = fileName;
+    updateWindowTitle();
 }
 
 void SLMainWindow::print()
@@ -138,7 +153,7 @@ void SLMainWindow::addImageFromLocalFile()
     QFileDialog::getOpenFileContent("Image Files (*.jpg *.jpeg *.png *.tiff *.bmp)", fileContentReady);
 }
 
-void SLMainWindow::removeAll()
+void SLMainWindow::startNewDocument()
 {
     // ask user for confirmation
     const auto btn = QMessageBox::question(
@@ -150,6 +165,9 @@ void SLMainWindow::removeAll()
         );
     if (btn==QMessageBox::Yes) {
         ui->graphicsView->removeAllItems();
+        setFileName("");
+        m_undoRedo.reset(QJsonObject());
+        updateActions();
     }
 }
 
@@ -305,6 +323,7 @@ void SLMainWindow::loadFile(const QString &filename)
         QMessageBox::warning(this, qApp->applicationName(), tr("Failed to open file %1 for reading").arg(filename));
         return;
     }
+    setFileName("");
     const QByteArray data = file.readAll();
     file.close();
     QJsonParseError error;
@@ -319,6 +338,7 @@ void SLMainWindow::loadFile(const QString &filename)
     }
     m_undoRedo.reset(ui->graphicsView->asJson(SLGraphicsView::jfItemsOnly));
     updateActions();
+    setFileName(filename);
 }
 
 void SLMainWindow::initActions()
@@ -432,7 +452,7 @@ void SLMainWindow::initActions()
         tr("Show Buttons Text"));
     m_actions[actShowButtonText]->setCheckable(true);
 
-    connect(m_actions[actNew], &QAction::triggered, this, &SLMainWindow::removeAll);
+    connect(m_actions[actNew], &QAction::triggered, this, &SLMainWindow::startNewDocument);
     connect(m_actions[actOpen], &QAction::triggered, this, &SLMainWindow::loadFromFile);
     connect(m_actions[actSave], &QAction::triggered, this, &SLMainWindow::saveToFile);
     connect(m_actions[actPaste], &QAction::triggered, this, &SLMainWindow::pasteContent);

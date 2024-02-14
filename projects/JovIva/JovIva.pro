@@ -6,7 +6,9 @@
 include(../../common.pri)
 SOURCES += \
     main.cpp
-
+# fetch version from ../../version.txt
+VERSION = $$cat(../../version.txt)
+DEFINES += APP_VERSION=\\\"$$VERSION\\\"
 TRANSLATIONS += \
     ../../translations/srpski.ts
 CONFIG += lrelease

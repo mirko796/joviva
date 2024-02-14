@@ -41,6 +41,8 @@ private:
     void initActions();
     void initMainMenu();
     void loadFromSettings();
+    void updateWindowTitle();
+    void setFileName(const QString& fileName);
     Ui::SLMainWindow *ui;
     QSettings* m_settings;
     Translators m_translators;
@@ -48,13 +50,14 @@ private:
     SLUndoRedo<QJsonObject> m_undoRedo;
     bool    m_restoring = false;
     QHash<Action, QAction*> m_actions;
+    QString m_fileName;
 private slots:
     void    print();
     void    printPreview();
     void    pasteContent();
     void    addImageFromLocalFile();
     void    addText(const QString& text=QString());
-    void    removeAll();
+    void    startNewDocument();
     void    saveToFile();
     void    loadFromFile();
     // important for undo/redo
