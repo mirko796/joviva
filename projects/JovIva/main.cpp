@@ -7,6 +7,11 @@
 int main(int argc, char *argv[])
 {
     QApplication a(argc, argv);
+    a.setApplicationDisplayName("JovIva");
+    a.setApplicationName("JovIva");
+    a.setApplicationVersion(APP_VERSION);
+    qDebug()<<"==== Starting application ===";
+    qDebug()<<"Version:"<<APP_VERSION<<" ["<<GIT_COMMIT<<"]  Built on:"<<__DATE__<<__TIME__;
     a.setWindowIcon(QIcon(":/app-icon.png"));
     SLMainWindow::Translators translators;
     auto serbian = QSharedPointer<QTranslator>(new QTranslator());
@@ -23,7 +28,7 @@ int main(int argc, char *argv[])
 //            break;
 //        }
 //    }
-    QSettings settings("SimpleLayout", "SimpleLayout");
+    QSettings settings;
     SLMainWindow w(&settings,translators);
     w.show();
     // load from first param if provided

@@ -9,10 +9,14 @@ SOURCES += \
 # fetch version from ../../version.txt
 VERSION = $$cat(../../version.txt)
 DEFINES += APP_VERSION=\\\"$$VERSION\\\"
+# get git commit hash
+GIT_COMMIT = $$system(git rev-parse HEAD)
+DEFINES += GIT_COMMIT=\\\"$$GIT_COMMIT\\\"
+
 TRANSLATIONS += \
     ../../translations/srpski.ts
 CONFIG += lrelease
-CONFIG += embed_translations
+
 ICON = ../../rsrc/app-icon.png
 DESTDIR = ../../out
 TARGET = JovIva
