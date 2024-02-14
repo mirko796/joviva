@@ -1,0 +1,5 @@
+<RCC>
+    <qresource prefix="/translations">
+        <file>srpski.qm</file>
+    </qresource>
+</RCC>

@@ -1,0 +1,25 @@
+<RCC>
+    <qresource prefix="/">
+        <file>rotate-icon.png</file>
+        <file>open-icon.png</file>
+        <file>print-icon.png</file>
+        <file>save-icon.png</file>
+        <file>add-image-icon.png</file>
+        <file>paste-icon.png</file>
+        <file>add-text-icon.png</file>
+        <file>undo-icon.png</file>
+        <file>redo-icon.png</file>
+        <file>new-icon.png</file>
+        <file>landscape-icon.png</file>
+        <file>portrait-icon.png</file>
+        <file>align-right-icon.png</file>
+        <file>align-center-icon.png</file>
+        <file>italic-icon.png</file>
+        <file>align-left-icon.png</file>
+        <file>bold-icon.png</file>
+        <file>underline-icon.png</file>
+        <file>hollow-icon.png</file>
+        <file>print-preview-icon.png</file>
+        <file>app-icon.png</file>
+    </qresource>
+</RCC>
