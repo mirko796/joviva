@@ -15,8 +15,13 @@ ICON = ../../rsrc/app-icon.png
 DESTDIR = ../../out
 TARGET = JovIva
 # Default rules for deployment.
-qnx: target.path = /tmp/$${TARGET}/bin
-else: unix:!android: target.path = /opt/$${TARGET}/bin
-!isEmpty(target.path): INSTALLS += target
+unix {
+    isEmpty(PREFIX) {
+        PREFIX = /usr
+    }
+
+    target.path = $$PREFIX/bin
+}
 
 
+INSTALLS += target

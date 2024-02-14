@@ -1,0 +1,15 @@
+# path to the qmake of Qt installation you want to use
+QMAKE=~/Qt/6.5.3/gcc_64/bin/qmake
+
+# linuxdeploy is a tool to create AppImages
+# can be downloaded from following repo
+#   https://github.com/linuxdeploy/linuxdeploy
+# please download the linuxdeploy-plugin-qt plugin 
+# and put it in the same directory as linuxdeploy
+#   https://github.com/linuxdeploy/linuxdeploy-plugin-qt
+LINUXDEPLOY=~/Downloads/linuxdeploy-static-x86_64.AppImage
+
+# appimagetool is a tool to create AppImages
+# can be downloaded from following repo
+#   https://appimage.github.io/appimagetool/
+APPIMAGETOOL=~/Downloads/appimagetool-x86_64.AppImage
