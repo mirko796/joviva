@@ -18,6 +18,7 @@ class SLMainWindow : public QMainWindow
         actNew,
         actOpen,
         actSave,
+        actSaveAs,
         actPaste,
         actDelete,
         actUndo,
@@ -37,6 +38,7 @@ public:
     ~SLMainWindow();
 
     void loadFile(const QString& fileName);
+    void saveFile(const QString& filename);
 private:
     void initActions();
     void initMainMenu();
@@ -51,6 +53,7 @@ private:
     bool    m_restoring = false;
     QHash<Action, QAction*> m_actions;
     QString m_fileName;
+    QJsonObject m_savedContent;
 private slots:
     void    print();
     void    printPreview();
@@ -59,6 +62,7 @@ private slots:
     void    addText(const QString& text=QString());
     void    startNewDocument();
     void    saveToFile();
+    void    saveAsToFile();
     void    loadFromFile();
     // important for undo/redo
     void    onItemsChanged();

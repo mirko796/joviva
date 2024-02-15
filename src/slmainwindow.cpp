@@ -33,9 +33,10 @@ SLMainWindow::SLMainWindow(QSettings *settings, const Translators& translators, 
     ui->splitter->setSizes({100000,20});
 
     loadFromSettings();
-    updateActions();
-    updateButtonsTextVisibility();
-    updateWindowTitle();
+//    updateActions();
+//    updateButtonsTextVisibility();
+//    updateWindowTitle();
+    startNewDocument();
 }
 
 SLMainWindow::~SLMainWindow()
@@ -64,7 +65,8 @@ void SLMainWindow::updateWindowTitle()
     QString title = QString("JovIva %1 - Simple Image Editor").arg(APP_VERSION);
     if (m_fileName.size()) {
         const QString basename = QFileInfo(m_fileName).fileName();
-        title+=QString("(%1)").arg(basename);
+        const QString modified = m_savedContent==ui->graphicsView->asJson(SLGraphicsView::jfItemsOnly) ? "" : "*";
+        title+=QString(" [ %1 %2]").arg(basename,modified);
     }
     setWindowTitle(title);
 }
@@ -73,6 +75,7 @@ void SLMainWindow::setFileName(const QString &fileName)
 {
     m_fileName = fileName;
     updateWindowTitle();
+    updateActions();
 }
 
 void SLMainWindow::print()
@@ -155,33 +158,31 @@ void SLMainWindow::addImageFromLocalFile()
 
 void SLMainWindow::startNewDocument()
 {
-    // ask user for confirmation
-    const auto btn = QMessageBox::question(
-        this,
-        tr("Confirmation"),
-        tr("Are you sure you want to remove all items?"),
-        QMessageBox::Yes | QMessageBox::No,
-        QMessageBox::No
-        );
-    if (btn==QMessageBox::Yes) {
+    bool ok = true;
+    if (ui->graphicsView->itemsCount()>0) {
+        // ask user for confirmation
+        const auto btn = QMessageBox::question(
+            this,
+            tr("Confirmation"),
+            tr("Are you sure you want to remove all items?"),
+            QMessageBox::Yes | QMessageBox::No,
+            QMessageBox::No
+            );
+        ok = btn==QMessageBox::Yes;
+    }
+    if (ok) {
         ui->graphicsView->removeAllItems();
         setFileName("");
-        m_undoRedo.reset(QJsonObject());
+        m_savedContent = QJsonObject();
+        m_undoRedo.reset(
+            ui->graphicsView->asJson(SLGraphicsView::jfItemsOnly)
+            );
         updateActions();
     }
 }
 
-void SLMainWindow::saveToFile()
+void SLMainWindow::saveFile(const QString& filename)
 {
-    const QString desktopPath = QStandardPaths::writableLocation(QStandardPaths::DesktopLocation);
-    QString filename = QFileDialog::getSaveFileName(this, tr("Save File"),
-                                                          desktopPath,
-                                                          SL::defaultFileFilter());
-    if (filename.isEmpty())
-        return;
-    if (!filename.endsWith(SL::DefaultExtension)) {
-        filename+=QString(".%1").arg(SL::DefaultExtension);
-    }
     QJsonObject obj = ui->graphicsView->asJson(SLGraphicsView::jfItemsAndImages);
     QJsonDocument doc(obj);
     const QString json = doc.toJson(QJsonDocument::Indented);
@@ -192,6 +193,31 @@ void SLMainWindow::saveToFile()
     }
     file.write(json.toUtf8());
     file.close();
+    m_savedContent=ui->graphicsView->asJson(SLGraphicsView::jfItemsOnly);
+    setFileName(filename);
+}
+
+void SLMainWindow::saveToFile()
+{
+    if (m_fileName.isEmpty()) {
+        saveAsToFile();
+    } else {
+        saveFile(m_fileName);
+    }
+}
+
+void SLMainWindow::saveAsToFile()
+{
+    const QString desktopPath = QStandardPaths::writableLocation(QStandardPaths::DesktopLocation);
+    QString filename = QFileDialog::getSaveFileName(this, tr("Save File"),
+                                                    desktopPath,
+                                                    SL::defaultFileFilter());
+    if (filename.isEmpty())
+        return;
+    if (!filename.endsWith(SL::DefaultExtension)) {
+        filename+=QString(".%1").arg(SL::DefaultExtension);
+    }
+    saveFile(filename);
 }
 
 void SLMainWindow::loadFromFile()
@@ -221,26 +247,23 @@ void SLMainWindow::onItemsChanged()
         m_undoRedo.push(data);
         updateActions();
     }
-    QJsonDocument doc(data);
-    const QString json = doc.toJson(QJsonDocument::Compact);
-    auto crc = qChecksum(json.toUtf8().data(), json.size());
-    qDebug()<<"JSON CRC:"<<crc;
+    updateActions();
+    updateWindowTitle();
 }
 
 void SLMainWindow::updateActions()
 {
     m_actions[actUndo]->setEnabled(m_undoRedo.canUndo());
     m_actions[actRedo]->setEnabled(m_undoRedo.canRedo());
-//    ui->btn_undo->setEnabled(m_undoRedo.canUndo());
-//    ui->btn_redo->setEnabled(m_undoRedo.canRedo());
-//    ui->btn_undo->setText(tr("< (%1)").arg(m_undoRedo.stackPosition()));
-//    ui->btn_redo->setText(tr("> (%1)").arg(m_undoRedo.stackSize()));
 
     const auto orientation = ui->graphicsView->orientation();
-//    ui->btn_landscape->setChecked(orientation==Qt::Horizontal);
-//    ui->btn_portrait->setChecked(orientation==Qt::Vertical);
     m_actions[actLandscape]->setChecked(orientation==Qt::Horizontal);
     m_actions[actPortrait]->setChecked(orientation==Qt::Vertical);
+
+    bool modified = m_savedContent!=ui->graphicsView->asJson(SLGraphicsView::jfItemsOnly) || m_fileName.isEmpty();
+
+    m_actions[actSave]->setEnabled(modified);
+    m_actions[actSaveAs]->setEnabled(m_fileName.isEmpty()==false);
 }
 
 void SLMainWindow::undo()
@@ -255,6 +278,7 @@ void SLMainWindow::undo()
         m_restoring = false;
     }
     updateActions();
+    updateWindowTitle();
 }
 
 void SLMainWindow::redo()
@@ -268,6 +292,7 @@ void SLMainWindow::redo()
         m_restoring = false;
     }
     updateActions();
+    updateWindowTitle();
 }
 
 void SLMainWindow::updateButtonsTextVisibility()
@@ -336,8 +361,8 @@ void SLMainWindow::loadFile(const QString &filename)
         QMessageBox::warning(this, qApp->applicationName(), tr("Failed to load file %1").arg(filename));
         return;
     }
-    m_undoRedo.reset(ui->graphicsView->asJson(SLGraphicsView::jfItemsOnly));
-    updateActions();
+    m_savedContent = ui->graphicsView->asJson(SLGraphicsView::jfItemsOnly);
+    m_undoRedo.reset(m_savedContent);
     setFileName(filename);
 }
 
@@ -382,6 +407,11 @@ void SLMainWindow::initActions()
         ":/save-icon.png",
         ui->btn_save);
 
+    m_actions[actSaveAs] = createAction(
+        actSaveAs,
+        tr("Save As"),
+        QKeySequence::SaveAs,
+        ":/saveas-icon.png");
     m_actions[actPaste] = createAction(
         actPaste,
         tr("Paste"),
@@ -455,6 +485,7 @@ void SLMainWindow::initActions()
     connect(m_actions[actNew], &QAction::triggered, this, &SLMainWindow::startNewDocument);
     connect(m_actions[actOpen], &QAction::triggered, this, &SLMainWindow::loadFromFile);
     connect(m_actions[actSave], &QAction::triggered, this, &SLMainWindow::saveToFile);
+    connect(m_actions[actSaveAs], &QAction::triggered, this, &SLMainWindow::saveAsToFile);
     connect(m_actions[actPaste], &QAction::triggered, this, &SLMainWindow::pasteContent);
     connect(m_actions[actAddImage], &QAction::triggered, this, &SLMainWindow::addImageFromLocalFile);
     connect(m_actions[actAddText], &QAction::triggered, this, [this](){
@@ -482,6 +513,7 @@ void SLMainWindow::initMainMenu()
     fileMenu->addAction(m_actions[actNew]);
     fileMenu->addAction(m_actions[actOpen]);
     fileMenu->addAction(m_actions[actSave]);
+    fileMenu->addAction(m_actions[actSaveAs]);
     fileMenu->addSeparator();
     fileMenu->addAction(m_actions[actPrint]);
     fileMenu->addAction(m_actions[actPrintPreview]);

@@ -21,5 +21,6 @@
         <file>hollow-icon.png</file>
         <file>print-preview-icon.png</file>
         <file>app-icon.png</file>
+        <file>saveas-icon.png</file>
     </qresource>
 </RCC>
