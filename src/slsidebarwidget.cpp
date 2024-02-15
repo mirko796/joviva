@@ -25,6 +25,10 @@ SLSideBarWidget::SLSideBarWidget(QWidget *parent) :
     m_textAlignButtons = {ui->btn_left, ui->btn_center, ui->btn_right};
     connect(ui->sl_rotation, &QSlider::valueChanged, this, &SLSideBarWidget::onRotationChanged);
     connect(ui->chb_transparent, &QCheckBox::stateChanged, this, &SLSideBarWidget::onTransparentChangedByUser);
+#ifdef Q_OS_WASM
+    // disable text selection on wasm
+    ui->pt_text->setTextInteractionFlags(Qt::TextEditable);
+#endif
 
     connect(ui->fcb_font, &QFontComboBox::currentFontChanged, [this](const QFont & /*font*/) {
         updateTextItem();

@@ -67,21 +67,21 @@ void SLGraphicsView::contextMenuEvent(QContextMenuEvent *event) {
     if (item)
     {
         item->setSelected(true);
-        QMenu contextMenu(this);
-        auto actDelete = contextMenu.addAction(tr("Delete"));
-        connect(actDelete, &QAction::triggered, item, [&](bool checked) {
+        QMenu* contextMenu=new QMenu(this);
+        auto actDelete = contextMenu->addAction(tr("Delete"));
+        connect(actDelete, &QAction::triggered, item, [this,item](bool checked) {
             Q_UNUSED(checked);
             removeItem(item);
         });
-        auto actRaise = contextMenu.addAction(tr("Bring to front"));
-        connect(actRaise, &QAction::triggered, item, [&](bool checked) {
+        auto actRaise = contextMenu->addAction(tr("Bring to front"));
+        connect(actRaise, &QAction::triggered, item, [this,item](bool checked) {
             Q_UNUSED(checked);
             qDebug()<<"Raise item:"<<item;
             m_scene.bringSelectedItemToTop();
             emit itemsChanged();
         });
-        auto actLower = contextMenu.addAction(tr("Move to back"));
-        connect(actLower, &QAction::triggered, item, [&](bool checked) {
+        auto actLower = contextMenu->addAction(tr("Move to back"));
+        connect(actLower, &QAction::triggered, item, [this,item](bool checked) {
             Q_UNUSED(checked);
             qDebug()<<"Lower item:"<<item;
             m_scene.bringSelectedItemToBottom();
@@ -94,8 +94,9 @@ void SLGraphicsView::contextMenuEvent(QContextMenuEvent *event) {
 //            qDebug()<<"Preserve aspect ratio:"<<checked;
 //            item->setPreserveAspectRatio(checked);
 //        });
-
-        contextMenu.exec(event->globalPos()); // Show the context menu at the mouse cursor
+        connect(contextMenu, &QMenu::aboutToHide, contextMenu, &QObject::deleteLater);
+        contextMenu->move(event->globalPos());
+        contextMenu->show();
 
     }
     // Add more actions as needed
