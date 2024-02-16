@@ -22,5 +22,7 @@
         <file>print-preview-icon.png</file>
         <file>app-icon.png</file>
         <file>saveas-icon.png</file>
+        <file>github-icon.png</file>
+        <file>author-icon.png</file>
     </qresource>
 </RCC>

@@ -6,40 +6,80 @@
    <rect>
     <x>0</x>
     <y>0</y>
-    <width>400</width>
-    <height>300</height>
+    <width>540</width>
+    <height>248</height>
    </rect>
   </property>
   <property name="windowTitle">
    <string>Dialog</string>
   </property>
+  <property name="styleSheet">
+   <string notr="true">QDialog  {
+background-color: rgb(170, 170, 170);
+}
+
+QLabel, QPushButton {
+color:black;
+}
+
+QPushButton {
+    color: rgb(18, 18, 18);
+    border: 1px solid black; /* Add a dark gray border with 1px width */
+    background-color: rgb(170, 170, 170);
+    border-radius: 5px; /* Set the desired radius for rounded corners */
+    padding: 5px;
+}
+
+QPushButton:hover {
+    background-color: rgba(255, 255, 255, 0.5);  /* Set semi-transparent white background on hover */
+}
+
+QPushButton:checked {
+    background-color: rgba(255, 255, 255, 0.7);
+}
+
+</string>
+  </property>
   <layout class="QVBoxLayout" name="verticalLayout">
    <item>
     <layout class="QHBoxLayout" name="horizontalLayout">
+     <property name="bottomMargin">
+      <number>10</number>
+     </property>
      <item>
-      <widget class="QLabel" name="label">
-       <property name="minimumSize">
-        <size>
-         <width>128</width>
-         <height>128</height>
-        </size>
+      <layout class="QVBoxLayout" name="verticalLayout_2">
+       <property name="leftMargin">
+        <number>0</number>
        </property>
-       <property name="maximumSize">
-        <size>
-         <width>128</width>
-         <height>128</height>
-        </size>
+       <property name="topMargin">
+        <number>0</number>
        </property>
-       <property name="text">
-        <string/>
-       </property>
-       <property name="pixmap">
-        <pixmap resource="../rsrc/images.qrc">:/app-icon.png</pixmap>
-       </property>
-       <property name="scaledContents">
-        <bool>true</bool>
-       </property>
-      </widget>
+       <item>
+        <widget class="QLabel" name="label">
+         <property name="minimumSize">
+          <size>
+           <width>128</width>
+           <height>128</height>
+          </size>
+         </property>
+         <property name="maximumSize">
+          <size>
+           <width>128</width>
+           <height>128</height>
+          </size>
+         </property>
+         <property name="text">
+          <string/>
+         </property>
+         <property name="pixmap">
+          <pixmap resource="../rsrc/images.qrc">:/app-icon.png</pixmap>
+         </property>
+         <property name="scaledContents">
+          <bool>true</bool>
+         </property>
+        </widget>
+       </item>
+      </layout>
      </item>
      <item>
       <layout class="QGridLayout" name="gridLayout">
@@ -55,16 +95,12 @@
          <property name="text">
           <string>Git hash:</string>
          </property>
-        </widget>
-       </item>
-       <item row="3" column="0">
-        <widget class="QLabel" name="label_5">
-         <property name="text">
-          <string>Built on:</string>
+         <property name="alignment">
+          <set>Qt::AlignRight|Qt::AlignTrailing|Qt::AlignVCenter</set>
          </property>
         </widget>
        </item>
-       <item row="4" column="1">
+       <item row="6" column="1">
         <spacer name="verticalSpacer">
          <property name="orientation">
           <enum>Qt::Vertical</enum>
@@ -77,24 +113,13 @@
          </property>
         </spacer>
        </item>
-       <item row="2" column="1">
-        <widget class="QLabel" name="lbl_hash">
+       <item row="3" column="0">
+        <widget class="QLabel" name="label_5">
          <property name="text">
-          <string>TextLabel</string>
+          <string>Built on:</string>
          </property>
-        </widget>
-       </item>
-       <item row="1" column="0">
-        <widget class="QLabel" name="label_3">
-         <property name="text">
-          <string>Version:</string>
-         </property>
-        </widget>
-       </item>
-       <item row="1" column="1">
-        <widget class="QLabel" name="lbl_version">
-         <property name="text">
-          <string>TextLabel</string>
+         <property name="alignment">
+          <set>Qt::AlignRight|Qt::AlignTrailing|Qt::AlignVCenter</set>
          </property>
         </widget>
        </item>
@@ -107,6 +132,152 @@
          </property>
          <property name="text">
           <string>TextLabel</string>
+         </property>
+        </widget>
+       </item>
+       <item row="2" column="1">
+        <widget class="QLabel" name="lbl_hash">
+         <property name="text">
+          <string>TextLabel</string>
+         </property>
+        </widget>
+       </item>
+       <item row="4" column="0">
+        <layout class="QHBoxLayout" name="horizontalLayout_3">
+         <property name="topMargin">
+          <number>0</number>
+         </property>
+         <item>
+          <spacer name="horizontalSpacer_3">
+           <property name="orientation">
+            <enum>Qt::Horizontal</enum>
+           </property>
+           <property name="sizeHint" stdset="0">
+            <size>
+             <width>40</width>
+             <height>20</height>
+            </size>
+           </property>
+          </spacer>
+         </item>
+         <item>
+          <widget class="QLabel" name="label_2">
+           <property name="minimumSize">
+            <size>
+             <width>24</width>
+             <height>24</height>
+            </size>
+           </property>
+           <property name="maximumSize">
+            <size>
+             <width>24</width>
+             <height>24</height>
+            </size>
+           </property>
+           <property name="text">
+            <string/>
+           </property>
+           <property name="pixmap">
+            <pixmap resource="../rsrc/images.qrc">:/github-icon.png</pixmap>
+           </property>
+           <property name="scaledContents">
+            <bool>true</bool>
+           </property>
+           <property name="alignment">
+            <set>Qt::AlignRight|Qt::AlignTrailing|Qt::AlignVCenter</set>
+           </property>
+          </widget>
+         </item>
+        </layout>
+       </item>
+       <item row="1" column="0">
+        <widget class="QLabel" name="label_3">
+         <property name="text">
+          <string>Version:</string>
+         </property>
+         <property name="alignment">
+          <set>Qt::AlignRight|Qt::AlignTrailing|Qt::AlignVCenter</set>
+         </property>
+        </widget>
+       </item>
+       <item row="1" column="1">
+        <widget class="QLabel" name="lbl_version">
+         <property name="text">
+          <string>TextLabel</string>
+         </property>
+        </widget>
+       </item>
+       <item row="5" column="0">
+        <layout class="QHBoxLayout" name="horizontalLayout_5">
+         <property name="topMargin">
+          <number>0</number>
+         </property>
+         <item>
+          <spacer name="horizontalSpacer_5">
+           <property name="orientation">
+            <enum>Qt::Horizontal</enum>
+           </property>
+           <property name="sizeHint" stdset="0">
+            <size>
+             <width>40</width>
+             <height>20</height>
+            </size>
+           </property>
+          </spacer>
+         </item>
+         <item>
+          <widget class="QLabel" name="label_8">
+           <property name="minimumSize">
+            <size>
+             <width>24</width>
+             <height>24</height>
+            </size>
+           </property>
+           <property name="maximumSize">
+            <size>
+             <width>24</width>
+             <height>24</height>
+            </size>
+           </property>
+           <property name="text">
+            <string/>
+           </property>
+           <property name="pixmap">
+            <pixmap resource="../rsrc/images.qrc">:/author-icon.png</pixmap>
+           </property>
+           <property name="scaledContents">
+            <bool>true</bool>
+           </property>
+           <property name="alignment">
+            <set>Qt::AlignRight|Qt::AlignTrailing|Qt::AlignVCenter</set>
+           </property>
+          </widget>
+         </item>
+        </layout>
+       </item>
+       <item row="4" column="1">
+        <widget class="QLabel" name="label_6">
+         <property name="styleSheet">
+          <string notr="true">color: rgb(1, 23, 255);</string>
+         </property>
+         <property name="text">
+          <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;&lt;a href=&quot;https://github.com/mirko796/joviva&quot;&gt;&lt;span style=&quot; text-decoration: underline; color:inherit;&quot;&gt;github.com/mirko796/joviva&lt;/span&gt;&lt;/a&gt;&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
+         </property>
+         <property name="openExternalLinks">
+          <bool>true</bool>
+         </property>
+        </widget>
+       </item>
+       <item row="5" column="1">
+        <widget class="QLabel" name="label_9">
+         <property name="styleSheet">
+          <string notr="true">color: rgb(1, 23, 255);</string>
+         </property>
+         <property name="text">
+          <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;&lt;a href=&quot;https://mrcode.dev&quot;&gt;&lt;span style=&quot; text-decoration: underline; color:inherit;&quot;&gt;Mirko Rajkovača&lt;/span&gt;&lt;/a&gt;&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
+         </property>
+         <property name="openExternalLinks">
+          <bool>true</bool>
          </property>
         </widget>
        </item>
@@ -126,6 +297,22 @@
       </spacer>
      </item>
     </layout>
+   </item>
+   <item>
+    <widget class="QLabel" name="label_10">
+     <property name="text">
+      <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;This project uses icons from
+
+&lt;a href=&quot;https://fontawesome.com/&quot;&gt;&lt;span style=&quot; text-decoration: underline; color:inherit;&quot;&gt;fontawesome.com&lt;/span&gt;&lt;/a&gt;
+ &lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
+     </property>
+     <property name="alignment">
+      <set>Qt::AlignCenter</set>
+     </property>
+     <property name="openExternalLinks">
+      <bool>true</bool>
+     </property>
+    </widget>
    </item>
    <item>
     <spacer name="verticalSpacer_2">
