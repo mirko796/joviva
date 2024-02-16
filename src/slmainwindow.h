@@ -6,6 +6,7 @@
 #include "slundoredo.h"
 #include <QSettings>
 #include <QTranslator>
+#include "jiaboutdlg.h"
 QT_BEGIN_NAMESPACE
 namespace Ui { class SLMainWindow; }
 QT_END_NAMESPACE
@@ -29,7 +30,8 @@ class SLMainWindow : public QMainWindow
         actAddText,
         actPortrait,
         actLandscape,
-        actShowButtonText
+        actShowButtonText,
+        actAbout
     };
 
 public:
@@ -54,6 +56,7 @@ private:
     QHash<Action, QAction*> m_actions;
     QString m_fileName;
     QJsonObject m_savedContent;
+    JIAboutDlg  m_aboutDlg;
 private slots:
     void    print();
     void    printPreview();
@@ -71,5 +74,6 @@ private slots:
     void    redo();
     void    updateButtonsTextVisibility();
     void    onLanguageActionTriggered();
+    void    about();
 };
 #endif // SLMAINWINDOW_H

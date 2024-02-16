@@ -10,6 +10,7 @@
 #include <QJsonDocument>
 #include <QStandardPaths>
 #include <QTimer>
+
 SLMainWindow::SLMainWindow(QSettings *settings, const Translators& translators, QWidget *parent)
     : QMainWindow(parent)
     , ui(new Ui::SLMainWindow)
@@ -329,6 +330,12 @@ void SLMainWindow::onLanguageActionTriggered()
     ui->retranslateUi(this);
 }
 
+void SLMainWindow::about()
+{
+    m_aboutDlg.setModal(true);
+    m_aboutDlg.show();
+}
+
 void SLMainWindow::addText(const QString& text)
 {
     SL::TextParams params;
@@ -482,6 +489,10 @@ void SLMainWindow::initActions()
         tr("Show Buttons Text"));
     m_actions[actShowButtonText]->setCheckable(true);
 
+    m_actions[actAbout] = createAction(
+        actAbout,
+        tr("About"));
+
     connect(m_actions[actNew], &QAction::triggered, this, &SLMainWindow::startNewDocument);
     connect(m_actions[actOpen], &QAction::triggered, this, &SLMainWindow::loadFromFile);
     connect(m_actions[actSave], &QAction::triggered, this, &SLMainWindow::saveToFile);
@@ -502,6 +513,7 @@ void SLMainWindow::initActions()
     connect(m_actions[actPrint], &QAction::triggered, this, &SLMainWindow::print);
     connect(m_actions[actPrintPreview], &QAction::triggered, this, &SLMainWindow::printPreview);
     connect(m_actions[actShowButtonText], &QAction::triggered, this, &SLMainWindow::updateButtonsTextVisibility);
+    connect(m_actions[actAbout], &QAction::triggered, this, &SLMainWindow::about);
     // add all actions to main window
     addActions(m_actions.values());
 
@@ -537,5 +549,8 @@ void SLMainWindow::initMainMenu()
         m_languageMenu->addAction(action);
         connect( action, &QAction::triggered, this, &SLMainWindow::onLanguageActionTriggered);
     }
+
+    QMenu* helpMenu = menuBar()->addMenu(tr("&Help"));
+    helpMenu->addAction(m_actions[actAbout]);
 }
 

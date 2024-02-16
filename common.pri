@@ -7,7 +7,8 @@ CONFIG += c++17
 SRC_DIR = $$PWD/src
 INCLUDEPATH *= $$SRC_DIR
 SOURCES *= \
-    $$PWD/src/slundoredo.cpp \
+    $$SRC_DIR/jiaboutdlg.cpp \
+    $$SRC_DIR/slundoredo.cpp \
     $$SRC_DIR/slcommon.cpp \
     $$SRC_DIR/slgraphicsitem.cpp \
     $$SRC_DIR/slgraphicspixmapitem.cpp \
@@ -20,7 +21,8 @@ SOURCES *= \
     $$SRC_DIR/slsidebarwidget.cpp
 
 HEADERS *= \
-    $$PWD/src/slundoredo.h \
+    $$SRC_DIR/jiaboutdlg.h \
+    $$SRC_DIR/slundoredo.h \
     $$SRC_DIR/slcommon.h \
     $$SRC_DIR/slgraphicsitem.h \
     $$SRC_DIR/slgraphicspixmapitem.h \
@@ -33,6 +35,7 @@ HEADERS *= \
     $$SRC_DIR/slsidebarwidget.h
 
 FORMS *= \
+    $$SRC_DIR/jiaboutdlg.ui \
     $$SRC_DIR/slmainwindow.ui \
     $$SRC_DIR/slsidebarwidget.ui
 
