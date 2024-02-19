@@ -41,6 +41,9 @@ public:
 
     void loadFile(const QString& fileName);
     void saveFile(const QString& filename);
+
+    void pasteTextWasm(const QString& text);
+    void pasteImageWasm(const QByteArray& data);
 private:
     void initActions();
     void initMainMenu();

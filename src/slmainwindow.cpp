@@ -11,11 +11,12 @@
 #include <QStandardPaths>
 #include <QTimer>
 #include <QBuffer>
+#include <QPlainTextEdit>
 #ifdef Q_OS_WASM
 #include <emscripten.h>
 #include <emscripten/bind.h>
 const char* byteArray = "Hello, World!";
-
+static SLMainWindow* g_mainWindow = nullptr;
 void myFunction(const int v) {
     qDebug()<<"Value received:"<<v;
     QTimer::singleShot(1000,[v]() {
@@ -25,6 +26,17 @@ void myFunction(const int v) {
 
 void myFunctionChar(std::string text) {
     qDebug()<<"Text received:"<<text;
+}
+
+void pasteTextWasm(const std::string& text) {
+    if (g_mainWindow) {
+        g_mainWindow->pasteTextWasm(QString::fromStdString(text));
+    }
+}
+
+void pasteImageWasm(const std::string& b64) {
+    const QByteArray data = QByteArray::fromBase64(b64.c_str());
+    g_mainWindow->pasteImageWasm(data);
 }
 
 std::string getByteArray() {
@@ -53,6 +65,8 @@ EMSCRIPTEN_BINDINGS(mylibrary) {
     emscripten::function("myFunction", &myFunction);
     emscripten::function("myFunctionChar", &myFunctionChar);
     emscripten::function("getByteArray", &getByteArray, emscripten::allow_raw_pointers());
+    emscripten::function("pasteTextWasm", &pasteTextWasm);
+    emscripten::function("pasteImageWasm", &pasteImageWasm);
 }
 #endif
 SLMainWindow::SLMainWindow(QSettings *settings, const Translators& translators, QWidget *parent)
@@ -62,7 +76,9 @@ SLMainWindow::SLMainWindow(QSettings *settings, const Translators& translators, 
     , m_translators(translators)
     , m_undoRedo(QJsonObject())
 {
-
+#ifdef Q_OS_WASM
+    g_mainWindow = this;
+#endif
     /* let's install translator before any ui actions */
     const QString lang = m_settings->value(SL::SettingsKeyLanguage, "").toString();
     if (m_translators.contains(lang)) {
@@ -87,6 +103,9 @@ SLMainWindow::SLMainWindow(QSettings *settings, const Translators& translators, 
 
 SLMainWindow::~SLMainWindow()
 {
+#ifdef Q_OS_WASM
+    g_mainWindow = nullptr;
+#endif
     delete ui;
 }
 
@@ -115,6 +134,29 @@ void SLMainWindow::updateWindowTitle()
         title+=QString(" [ %1 %2]").arg(basename,modified);
     }
     setWindowTitle(title);
+}
+
+void SLMainWindow::pasteTextWasm(const QString &text)
+{
+    auto focusedPlainTextControl = qobject_cast<QPlainTextEdit*>(qApp->focusWidget());
+    if (focusedPlainTextControl) {
+        focusedPlainTextControl->insertPlainText(text);
+    } else {
+        addText(text);
+    }
+}
+
+void SLMainWindow::pasteImageWasm(const QByteArray &data)
+{
+    QPixmap pixmap;
+    pixmap.loadFromData(data);
+    if (pixmap.isNull()) {
+        // show error using QMessageBox
+        QMessageBox::warning(nullptr, qApp->applicationName(), QObject::tr("Failed to load image from clipboard"));
+    } else {
+        ui->graphicsView->addPixmapItem(pixmap);
+    }
+
 }
 
 void SLMainWindow::setFileName(const QString &fileName)
@@ -153,8 +195,8 @@ void SLMainWindow::printPreview()
 void SLMainWindow::pasteContent()
 {
 #ifdef Q_OS_WASM
-    emscripten_async_run_script("receiveFromQt();",1000);
-#endif
+    emscripten_async_run_script("getClipboardData();",1000);
+#else
     qDebug()<<"TEST2";
     auto clp = qApp->clipboard();
     qDebug()<<clp->image().size();
@@ -180,6 +222,7 @@ void SLMainWindow::pasteContent()
             addText(text.trimmed());
         }
     }
+#endif
 }
 
 void SLMainWindow::addImageFromLocalFile()
@@ -470,7 +513,11 @@ void SLMainWindow::initActions()
     m_actions[actPaste] = createAction(
         actPaste,
         tr("Paste"),
+#ifdef Q_OS_WASM
+        QKeySequence(),
+#else
         QKeySequence::Paste,
+#endif
         ":/paste-icon.png",
         ui->btn_paste);
 

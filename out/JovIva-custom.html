@@ -81,6 +81,70 @@
     <script type="text/javascript" src="qwebchannel.js"></script>
 
     <script>
+        // register paste event for whole window
+        window.addEventListener('paste', function (e) {
+            const text = e.clipboardData.getData('text');
+            if (text.length > 0) {
+                console.log("Pasted:", text);
+                qtLoader.module().pasteTextWasm(text);
+                // sendToQt(text);
+            } else {
+                console.log("Pasted:", e.clipboardData.getData('text'));
+                // check if there is a image in clipboard
+                if (e.clipboardData.items.length > 0) {
+                    for (var i = 0; i < e.clipboardData.items.length; i++) {
+                        if (e.clipboardData.items[i].type.indexOf("image") !== -1) {
+                            // get the image
+                            var blob = e.clipboardData.items[i].getAsFile();
+                            var reader = new FileReader();
+                            reader.onload = function (event) {
+                                // encode the image bytes to base64
+                                let base64Image = event.target.result.split(",")[1];
+                                
+
+                                qtLoader.module().pasteImageWasm(base64Image);
+                            };
+                            reader.readAsDataURL(blob);
+                        }
+                    }
+                }
+            }
+        });
+        function getClipboardData() {
+            console.log('getClipboardData');
+            navigator.clipboard.read().then(data => {                
+                for (let i = 0; i < data.length; i++) {
+                    // check for text
+                    if (data[i].types.includes('text/plain')) {
+                        data[i].getType('text/plain').then(blob => {
+                            // get text from blob
+                            let reader = new FileReader();
+                            reader.onload = function (event) {
+                                let text = event.target.result;
+                                console.log("Got text",text);
+
+                                qtLoader.module().pasteTextWasm(text);
+                            };
+                            reader.readAsText(blob);
+                        });
+                    }
+                    else if (data[i].types.includes('image/png') || data[i].types.includes('image/jpeg')) {
+                        data[i].getType('image/png' || 'image/jpeg').then(blob => {
+                            console.log("Got blob");
+                            var reader = new FileReader();
+                            reader.onload = function (event) {
+                                // encode the image bytes to base64
+                                let base64Image = event.target.result.split(",")[1];
+                                
+
+                                qtLoader.module().pasteImageWasm(base64Image);
+                            };
+                            reader.readAsDataURL(blob);
+                        });
+                    }
+                }
+            });
+        }
 
         function sendToQt() {
             // Load the Emscripten module
