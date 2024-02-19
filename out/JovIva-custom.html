@@ -112,6 +112,10 @@
         });
         function getClipboardData() {
             console.log('getClipboardData');
+            if (!navigator.clipboard) {
+                console.log("Clipboard API not available");
+                return;
+            }
             navigator.clipboard.read().then(data => {                
                 for (let i = 0; i < data.length; i++) {
                     // check for text
