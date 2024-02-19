@@ -30,3 +30,9 @@ unix {
 }
 
 INSTALLS += target
+
+wasm {
+message("Wasm build");
+QMAKE_CXXFLAGS += -s EXTRA_EXPORTED_RUNTIME_METHODS=\'["ccall", "cwrap", "lengthBytesUTF8"]\'
+QMAKE_LFLAGS += -s EXTRA_EXPORTED_RUNTIME_METHODS=\'["ccall", "cwrap", "lengthBytesUTF8"]\'
+}

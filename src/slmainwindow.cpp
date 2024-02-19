@@ -10,10 +10,11 @@
 #include <QJsonDocument>
 #include <QStandardPaths>
 #include <QTimer>
+#include <QBuffer>
 #ifdef Q_OS_WASM
 #include <emscripten.h>
 #include <emscripten/bind.h>
-
+const char* byteArray = "Hello, World!";
 
 void myFunction(const int v) {
     qDebug()<<"Value received:"<<v;
@@ -25,9 +26,33 @@ void myFunction(const int v) {
 void myFunctionChar(std::string text) {
     qDebug()<<"Text received:"<<text;
 }
+
+std::string getByteArray() {
+    const int width=4000;
+    const int height=5000;
+    // create qimage 128*128 draw diagonal line and save to QByteArray as PNG
+    QImage img(width,height,QImage::Format_ARGB32);
+    QPainter painter(&img);
+    // draw vertical gradient green, yellow, red
+    QLinearGradient gradient(0,0,0,height);
+    gradient.setColorAt(0, Qt::green);
+    gradient.setColorAt(0.5, Qt::yellow);
+    gradient.setColorAt(1, Qt::red);
+    painter.setBrush(gradient);
+    painter.drawRect(0,0,width,height);
+    painter.setPen(QPen(Qt::black, 2));
+    painter.drawLine(0,0,width,height);
+    QByteArray byteArray;
+    QBuffer buffer(&byteArray);
+    buffer.open(QIODevice::WriteOnly);
+    img.save(&buffer, "PNG");
+    std::string ret = byteArray.toBase64().toStdString();
+    return ret;
+}
 EMSCRIPTEN_BINDINGS(mylibrary) {
     emscripten::function("myFunction", &myFunction);
     emscripten::function("myFunctionChar", &myFunctionChar);
+    emscripten::function("getByteArray", &getByteArray, emscripten::allow_raw_pointers());
 }
 #endif
 SLMainWindow::SLMainWindow(QSettings *settings, const Translators& translators, QWidget *parent)
