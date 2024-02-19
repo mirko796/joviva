@@ -10,7 +10,26 @@
 #include <QJsonDocument>
 #include <QStandardPaths>
 #include <QTimer>
+#ifdef Q_OS_WASM
+#include <emscripten.h>
+#include <emscripten/bind.h>
 
+
+void myFunction(const int v) {
+    qDebug()<<"Value received:"<<v;
+    QTimer::singleShot(1000,[v]() {
+        qDebug()<<"Delayed:"<<v;
+    });
+}
+
+void myFunctionChar(std::string text) {
+    qDebug()<<"Text received:"<<text;
+}
+EMSCRIPTEN_BINDINGS(mylibrary) {
+    emscripten::function("myFunction", &myFunction);
+    emscripten::function("myFunctionChar", &myFunctionChar);
+}
+#endif
 SLMainWindow::SLMainWindow(QSettings *settings, const Translators& translators, QWidget *parent)
     : QMainWindow(parent)
     , ui(new Ui::SLMainWindow)
@@ -18,6 +37,7 @@ SLMainWindow::SLMainWindow(QSettings *settings, const Translators& translators, 
     , m_translators(translators)
     , m_undoRedo(QJsonObject())
 {
+
     /* let's install translator before any ui actions */
     const QString lang = m_settings->value(SL::SettingsKeyLanguage, "").toString();
     if (m_translators.contains(lang)) {
@@ -107,6 +127,9 @@ void SLMainWindow::printPreview()
 
 void SLMainWindow::pasteContent()
 {
+#ifdef Q_OS_WASM
+    emscripten_async_run_script("receiveFromQt();",1000);
+#endif
     qDebug()<<"TEST2";
     auto clp = qApp->clipboard();
     qDebug()<<clp->image().size();
