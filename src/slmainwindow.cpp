@@ -250,19 +250,7 @@ void SLMainWindow::addImageFromLocalFile()
 
 void SLMainWindow::startNewDocument()
 {
-    bool ok = true;
-    if (ui->graphicsView->itemsCount()>0) {
-        // ask user for confirmation
-        const auto btn = QMessageBox::question(
-            this,
-            tr("Confirmation"),
-            tr("Are you sure you want to remove all items?"),
-            QMessageBox::Yes | QMessageBox::No,
-            QMessageBox::No
-            );
-        ok = btn==QMessageBox::Yes;
-    }
-    if (ok) {
+    auto onConfirmed = [this](){
         ui->graphicsView->removeAllItems();
         setFileName("");
         m_savedContent = QJsonObject();
@@ -270,6 +258,16 @@ void SLMainWindow::startNewDocument()
             ui->graphicsView->asJson(SLGraphicsView::jfItemsOnly)
             );
         updateActions();
+    };
+    if (ui->graphicsView->itemsCount()>0) {
+        // ask user for confirmation in a async way so it will work with wasm too
+        SL::showQuestionAsync(tr("New Document"), tr("Are you sure you want to start new documen2t?"),
+                               {
+                                    { QMessageBox::Yes, onConfirmed },
+                                    { QMessageBox::No, nullptr }
+                                                                                                       });
+    } else {
+        onConfirmed();
     }
 }
 

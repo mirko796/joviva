@@ -4,6 +4,7 @@
 #include <QFont>
 #include <QColor>
 #include <QJsonObject>
+#include <QMessageBox>
 
 #define JSONKEY static constexpr char const* const
 namespace SL
@@ -39,5 +40,7 @@ struct TextParams
 
 double normalizedAngle(const double angle);
 QString defaultFileFilter();
+
+void showQuestionAsync(const QString& title, const QString& text, const QHash<QMessageBox::Button, std::function<void()> > buttonsAndCallbacks, const QMessageBox::Button defaultButton=QMessageBox::NoButton);
 }
 #endif // SLCOMMON_H

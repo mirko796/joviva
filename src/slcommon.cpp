@@ -62,4 +62,28 @@ QString defaultFileFilter()
     return QString("JovIva files (*.%1)").arg(DefaultExtension);
 }
 
+void showQuestionAsync(const QString& title, const QString& text, const QHash<QMessageBox::Button, std::function<void()> > buttonsAndCallbacks, const QMessageBox::Button defaultButton) {
+    QMessageBox* msgBox = new QMessageBox();
+    msgBox->setText(text);
+    msgBox->setWindowTitle(title);
+    QMessageBox::StandardButtons buttons;
+    for (auto button: buttonsAndCallbacks.keys()) {
+        buttons|=button;
+    }
+    msgBox->setStandardButtons(buttons);
+    msgBox->setDefaultButton(defaultButton);
+    msgBox->setIcon(QMessageBox::Question);
+    QObject::connect(msgBox, &QMessageBox::finished, [msgBox, buttonsAndCallbacks](int result) {
+        const auto btn = QMessageBox::StandardButton(result);
+        auto callback = buttonsAndCallbacks.value(btn);
+        if (callback) {
+            callback();
+        }
+        msgBox->deleteLater();
+    });
+    msgBox->setModal(true);
+    msgBox->show();
+    msgBox->adjustSize();
+}
+
 }
