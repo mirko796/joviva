@@ -31,7 +31,8 @@ class SLMainWindow : public QMainWindow
         actPortrait,
         actLandscape,
         actShowButtonText,
-        actAbout
+        actAbout,
+        actPaperSize
     };
 
 public:

@@ -6,7 +6,8 @@ include(../../common.pri)
 SOURCES += \
         main.cpp \
         testserialization.cpp \
-        testslundoredo.cpp
+        testslundoredo.cpp \
+        testpapersizedlg.cpp
 INCLUDEPATH += ../../libs/utest
 DESTDIR = ../../out
 

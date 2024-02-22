@@ -4,6 +4,33 @@
 namespace SL
 {
 
+static QHash<PaperFormat, PaperFormatInfo> g_paperFormatInfos;
+
+static QHash<PaperFormat, PaperFormatInfo>& getPaperFormatInfos()
+{
+    if (g_paperFormatInfos.isEmpty()) {
+        auto add = [](const PaperFormat pf, const QSize& size, const QString& name) {
+            g_paperFormatInfos[pf] = PaperFormatInfo(pf, size, name);
+        };
+        add(psFreeform, QSize(0, 0), "Freeform");
+        add(psA4, QSize(210, 297), "A4");
+        add(psB4, QSize(250, 353), "B4");
+        add(psLetter, QSize(216, 279), "Letter");
+        add(psLegal, QSize(216, 356), "Legal");
+        add(psSquare, QSize(210, 210), "Square");
+    }
+    return g_paperFormatInfos;
+}
+QList<PaperFormat> getPaperFormats()
+{
+    return getPaperFormatInfos().keys();
+}
+
+PaperFormatInfo getPaperFormatInfo(const PaperFormat paperFormat)
+{
+    return getPaperFormatInfos().value(paperFormat);
+};
+
 QJsonObject TextParams::asJson() const
 {
     QJsonObject ret;

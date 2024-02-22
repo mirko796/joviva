@@ -37,6 +37,42 @@ struct TextParams
 
     bool operator==(const TextParams& other) const;
 };
+enum PaperFormat {
+    psFreeform,
+    psA4,
+    psB4,
+    psLetter,
+    psLegal,
+    psSquare
+};
+
+struct PaperFormatInfo
+{
+    PaperFormat paperFormat;
+    QSize sizeInMM;
+    QString name;
+    PaperFormatInfo() = default;
+    PaperFormatInfo(const PaperFormat pf, const QSize& sizeInMM, const QString& name)
+        : paperFormat(pf), sizeInMM(sizeInMM), name(name)
+    {
+
+    }
+};
+QList<PaperFormat> getPaperFormats();
+PaperFormatInfo getPaperFormatInfo(const PaperFormat paperFormat);
+
+struct DocumentSize
+{
+    PaperFormat paperFormat;
+    QSize   sizeInPixels;
+    Qt::Orientation orientation;
+    DocumentSize() = default;
+    DocumentSize(const PaperFormat pf, const QSize& sizeInPixels, const Qt::Orientation orientation)
+        : paperFormat(pf), sizeInPixels(sizeInPixels), orientation(orientation)
+    {
+
+    }
+};
 
 double normalizedAngle(const double angle);
 QString defaultFileFilter();

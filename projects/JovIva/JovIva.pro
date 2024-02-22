@@ -6,12 +6,6 @@
 include(../../common.pri)
 SOURCES += \
     main.cpp
-# fetch version from ../../version.txt
-VERSION = $$cat(../../version.txt)
-DEFINES += APP_VERSION=\\\"$$VERSION\\\"
-# get git commit hash
-GIT_COMMIT = $$system(git rev-parse HEAD)
-DEFINES += GIT_COMMIT=\\\"$$GIT_COMMIT\\\"
 
 TRANSLATIONS += \
     ../../translations/srpski.ts
