@@ -42,7 +42,7 @@ const QSet<SLGraphicsItem::ControlPoint>& SLGraphicsItem::controlPoints()
 SLGraphicsItem::SLGraphicsItem(QGraphicsItem *parent) :
     QGraphicsObject(parent),
     m_controlPointSizeFactor(8),
-    m_rotateControlOffset(8)
+    m_rotateControlOffsetFactor(16)
 {
     // make selectable
     setFlag(QGraphicsItem::ItemIsSelectable);
@@ -249,7 +249,7 @@ QRectF SLGraphicsItem::controlPointRect(const ControlPoint point) const
         center = rect.topRight().toPoint() + QPoint(0,rect.height()/2);
         break;
     case ControlPoint::Rotate:
-        center = rect.topLeft().toPoint() + QPoint(rect.width()/2,-m_rotateControlOffset);
+        center = rect.topLeft().toPoint() + QPoint(rect.width()/2,-rotateControlOffset());
         break;
     case ControlPoint::Invalid:
     case ControlPoint::Move:
@@ -280,7 +280,7 @@ QCursor SLGraphicsItem::cursorShape(const ControlPoint point) const
         ret = QCursor(Qt::SizeHorCursor);
         break;
     case ControlPoint::Rotate:
-        ret = QCursor(QPixmap("://rsrc/rotate-icon.png").scaledToHeight(16,Qt::SmoothTransformation));
+        ret = QCursor(QPixmap(":/rotate-icon.png").scaledToHeight(16,Qt::SmoothTransformation));
         break;
     case ControlPoint::Move:
         ret = QCursor(Qt::DragMoveCursor);
@@ -458,6 +458,16 @@ double SLGraphicsItem::controlPointSize() const
     return ret;
 }
 
+double SLGraphicsItem::rotateControlOffset() const
+{
+    double ret = m_rotateControlOffsetFactor;
+    // view scale
+    if (scene()) {
+        ret /= scene()->views().first()->transform().m11();
+    }
+    return ret;
+}
+
 QVariant SLGraphicsItem::itemChange(GraphicsItemChange change, const QVariant &value)
 {
     if (change==ItemSelectedChange) {
@@ -477,10 +487,10 @@ void SLGraphicsItem::setRectDirect(const QRectF &rect)
     m_rect = rect;
     const double halfSize = controlPointSize()/2;
     const double margin = (m_captureControlPoint==ControlPoint::Invalid)?0:50;
-    const double rotateControlOffset = (m_drawRotateControl)?m_rotateControlOffset:0;
+    const double rotOffset = (m_drawRotateControl)?rotateControlOffset():0;
     m_boundingRect = m_rect.adjusted(
         -margin-halfSize,
-        -margin-rotateControlOffset- halfSize,
+        -margin-rotOffset- halfSize,
         margin+halfSize,
         margin+halfSize);
     qDebug()<<"Item rect:"<<m_rect<<m_boundingRect;

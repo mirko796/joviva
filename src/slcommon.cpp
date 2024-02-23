@@ -113,4 +113,9 @@ void showQuestionAsync(const QString& title, const QString& text, const QHash<QM
     msgBox->adjustSize();
 }
 
+QSize normalizeSize(const QSize s)
+{
+    return QSize(qMin(s.width(), s.height()), qMax(s.width(), s.height()));
+}
+
 }

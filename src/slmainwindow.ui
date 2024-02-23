@@ -250,6 +250,22 @@ QGraphicsView {
        </spacer>
       </item>
       <item>
+       <widget class="QToolButton" name="btn_exportImage">
+        <property name="text">
+         <string>Export</string>
+        </property>
+        <property name="iconSize">
+         <size>
+          <width>32</width>
+          <height>32</height>
+         </size>
+        </property>
+        <property name="autoRaise">
+         <bool>true</bool>
+        </property>
+       </widget>
+      </item>
+      <item>
        <widget class="QToolButton" name="btn_preview">
         <property name="text">
          <string>Print Preview</string>

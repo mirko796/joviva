@@ -69,6 +69,7 @@ protected:
     void    setRectDirect(const QRectF& rect);
     virtual void  transparentBackgroundChangedEvent() {};
     double controlPointSize() const;
+    double rotateControlOffset() const;
     QVariant itemChange(GraphicsItemChange change, const QVariant &value) override;
     void paint(QPainter *painter, const QStyleOptionGraphicsItem *option, QWidget *widget = nullptr) override;
     void hoverMoveEvent(QGraphicsSceneHoverEvent *event) override;
@@ -83,7 +84,7 @@ protected:
     QRectF m_rect;
     QRectF m_boundingRect;
     double m_controlPointSizeFactor;
-    double m_rotateControlOffset;
+    double m_rotateControlOffsetFactor;
     ControlPoint m_captureControlPoint = ControlPoint::Invalid;
     QPointF m_captureMousePosLocal;
     QPointF m_captureMousePosScene;

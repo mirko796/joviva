@@ -17,7 +17,8 @@ JIPaperSizeDlg::JIPaperSizeDlg(QWidget *parent) :
     connect(ui->sb_height, &QSpinBox::valueChanged, this, &JIPaperSizeDlg::onSizeChangedManually);
     connect(ui->cmb_paperFormat, QOverload<int>::of(&QComboBox::currentIndexChanged), [this](int) { updateSizeInPixels(nullptr); });
     connect(ui->cmb_orientation, QOverload<int>::of(&QComboBox::currentIndexChanged), [this](int) { updateSizeInPixels(ui->cmb_orientation); });
-
+    connect(ui->buttonBox, &QDialogButtonBox::accepted, this, &QDialog::accept);
+    connect(ui->buttonBox, &QDialogButtonBox::rejected, this, &QDialog::reject);
     setWindowTitle(tr("Set Paper Size"));
 }
 
@@ -29,10 +30,13 @@ JIPaperSizeDlg::~JIPaperSizeDlg()
 void JIPaperSizeDlg::setDocumentSize(const SL::DocumentSize &size)
 {
     m_updatingSize = true;
-    ui->sb_width->setValue(size.sizeInPixels.width());
-    ui->sb_height->setValue(size.sizeInPixels.height());
-    ui->cmb_orientation->setCurrentIndex(ui->cmb_orientation->findData(size.orientation));
-    ui->cmb_paperFormat->setCurrentIndex(ui->cmb_paperFormat->findData(size.paperFormat));
+    ui->sb_width->setValue(size.sizeInPixels().width());
+    ui->sb_height->setValue(size.sizeInPixels().height());
+    ui->cmb_orientation->setCurrentIndex(ui->cmb_orientation->findData(size.orientation()));
+    ui->cmb_paperFormat->setCurrentIndex(ui->cmb_paperFormat->findData(size.paperFormat()));
+    const SL::PaperFormatInfo info = SL::getPaperFormatInfo(size.paperFormat());
+    const int dpi = 25.4 * size.sizeInPixels().width() / info.sizeInMM.width();
+    ui->sb_dpi->setValue(dpi);
     m_updatingSize = false;
     updateSizeInPixels(ui->sb_width);
 }
@@ -40,9 +44,10 @@ void JIPaperSizeDlg::setDocumentSize(const SL::DocumentSize &size)
 SL::DocumentSize JIPaperSizeDlg::getDocumentSize() const
 {
     SL::DocumentSize ret;
-    ret.sizeInPixels = QSize(ui->sb_width->value(), ui->sb_height->value());
-    ret.orientation = static_cast<Qt::Orientation>(ui->cmb_orientation->currentData().toInt());
-    ret.paperFormat = static_cast<SL::PaperFormat>(ui->cmb_paperFormat->currentData().toInt());
+    QSize s(ui->sb_width->value(), ui->sb_height->value());
+    ret.setSizeInPixels(s);
+    ret.setOrientation(static_cast<Qt::Orientation>(ui->cmb_orientation->currentData().toInt()));
+    ret.setPaperFormat(static_cast<SL::PaperFormat>(ui->cmb_paperFormat->currentData().toInt()));
     return ret;
 }
 
@@ -120,6 +125,7 @@ void JIPaperSizeDlg::updateSizeInPixels(const QWidget *pivotWidget)
     }
     ui->sb_width->setValue(wPix);
     ui->sb_height->setValue(hPix);
+    qDebug()<<"wPix: "<<wPix<<" hPix: "<<hPix<<" dpi: "<<ui->sb_dpi->value();
 }
 
 void JIPaperSizeDlg::onSizeChangedManually()

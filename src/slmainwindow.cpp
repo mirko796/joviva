@@ -170,8 +170,7 @@ void SLMainWindow::print()
 {
     ui->graphicsView->clearSelection();
     SLPrintPreview preview(ui->graphicsView);
-    preview.setOrientation(ui->mw_sidebar->orientation());
-    preview.printDirect();
+    preview.printDirect(ui->graphicsView->documentSize());
 #if 0
     //save content of view to image
     QImage img(2100,2970,QImage::Format_ARGB32);
@@ -188,8 +187,7 @@ void SLMainWindow::printPreview()
 {
     ui->graphicsView->clearSelection();
     SLPrintPreview preview(ui->graphicsView);
-    preview.setOrientation(ui->mw_sidebar->orientation());
-    preview.printPreview();
+    preview.printPreview(ui->graphicsView->documentSize());
 }
 
 void SLMainWindow::pasteContent()
@@ -225,6 +223,30 @@ void SLMainWindow::pasteContent()
 #endif
 }
 
+// TODO: move this to SL common and make the same for savefile
+void openFile(QWidget *parent,
+                     const QString &caption,
+                     const QString &dir,
+                     const QString &filter,
+                     const std::function<void(const QString&, const QByteArray&)>& fileContentReady)
+{
+#ifdef Q_OS_WASM
+    QFileDialog::getOpenFileContent(filter, fileContentReady);
+#else
+    const QString filename = QFileDialog::getOpenFileName(parent, caption,
+                                                          dir,
+                                                          filter);
+    if (filename.isEmpty())
+        return;
+    QFile file(filename);
+    if (!file.open(QIODevice::ReadOnly))
+    {
+        QMessageBox::warning(parent, qApp->applicationName(), QObject::tr("Failed to open file %1 for reading").arg(filename));
+        return;
+    }
+    fileContentReady(filename, file.readAll());
+#endif
+}
 void SLMainWindow::addImageFromLocalFile()
 {
     // do the same using getOpenFileContent
@@ -245,7 +267,8 @@ void SLMainWindow::addImageFromLocalFile()
             }
         }
     };
-    QFileDialog::getOpenFileContent("Image Files (*.jpg *.jpeg *.png *.tiff *.bmp)", fileContentReady);
+    openFile(this, tr("Open Image File"), QStandardPaths::writableLocation(QStandardPaths::DesktopLocation),
+             "Image Files (*.jpg *.jpeg *.png *.tiff *.bmp)", fileContentReady);
 }
 
 void SLMainWindow::startNewDocument()
@@ -425,6 +448,46 @@ void SLMainWindow::about()
     m_aboutDlg.show();
 }
 
+void SLMainWindow::setPaperSize()
+{
+    m_paperSizeDlg.setModal(true);
+    m_paperSizeDlg.setDocumentSize(ui->graphicsView->documentSize());
+    m_paperSizeDlg.show();
+    connect(&m_paperSizeDlg, &JIPaperSizeDlg::finished, this, &SLMainWindow::onPaperSizeDialogFinished, Qt::UniqueConnection);
+}
+
+void SLMainWindow::onPaperSizeDialogFinished(int result)
+{
+    if (result!=QDialog::Accepted) {
+        return;
+    }
+    auto dlg = qobject_cast<JIPaperSizeDlg*>(sender());
+    if (!dlg) {
+        return;
+    }
+    ui->graphicsView->setDocumentSize( dlg->getDocumentSize() );
+}
+
+void SLMainWindow::exportAsImage()
+{
+    const QString desktopPath = QStandardPaths::writableLocation(QStandardPaths::DesktopLocation);
+    QString filename = QFileDialog::getSaveFileName(this, tr("Export As Image"),
+                                                    desktopPath,
+                                                    "PNG Files (*.png)");
+    if (filename.isEmpty())
+        return;
+    if (!filename.endsWith("png")) {
+        filename+=QString(".%1").arg("png");
+    }
+    //save content of view to image
+    //save content of view to image
+    const QSize paperSize = ui->graphicsView->paperSize();
+    QImage img(paperSize,QImage::Format_ARGB32);
+    QPainter painter(&img);
+    ui->graphicsView->scene()->render(&painter, img.rect(), ui->graphicsView->sceneRect());
+    img.save(filename);
+}
+
 void SLMainWindow::addText(const QString& text)
 {
     SL::TextParams params;
@@ -480,38 +543,39 @@ void SLMainWindow::initActions()
             }
             btn->setToolTip(tooltip);
         }
-        return action;
+        m_actions[act] = action;
     };
-    m_actions[actNew] = createAction(
+    createAction(
         actNew,
         tr("New"),
         QKeySequence::New,
         ":/new-icon.png",
         ui->btn_new);
 
-    m_actions[actOpen] = createAction(
+    createAction(
         actOpen,
         tr("Open"),
         QKeySequence::Open,
         ":/open-icon.png",
         ui->btn_load);
 
-    m_actions[actSave] = createAction(
+    createAction(
         actSave,
         tr("Save"),
         QKeySequence::Save,
         ":/save-icon.png",
         ui->btn_save);
 
-    m_actions[actSaveAs] = createAction(
+    createAction(
         actSaveAs,
         tr("Save As"),
         QKeySequence::SaveAs,
         ":/saveas-icon.png");
-    m_actions[actPaste] = createAction(
+    createAction(
         actPaste,
         tr("Paste"),
 #ifdef Q_OS_WASM
+        /* handled by JS part */
         QKeySequence(),
 #else
         QKeySequence::Paste,
@@ -519,35 +583,35 @@ void SLMainWindow::initActions()
         ":/paste-icon.png",
         ui->btn_paste);
 
-    m_actions[actAddImage] = createAction(
+    createAction(
         actAddImage,
         tr("Add Image"),
         QKeySequence(tr("Ctrl+I")),
         ":/add-image-icon.png",
         ui->btn_addImage);
 
-    m_actions[actAddText] = createAction(
+    createAction(
         actAddText,
         tr("Add Text"),
         QKeySequence(tr("Ctrl+T")),
         ":/add-text-icon.png",
         ui->btn_text);
 
-    m_actions[actUndo] = createAction(
+    createAction(
         actUndo,
         tr("Undo"),
         QKeySequence::Undo,
         ":/undo-icon.png",
         ui->btn_undo);
 
-    m_actions[actRedo] = createAction(
+    createAction(
         actRedo,
         tr("Redo"),
         QKeySequence::Redo,
         ":/redo-icon.png",
         ui->btn_redo);
 
-    m_actions[actPortrait] = createAction(
+    createAction(
         actPortrait,
         tr("Portrait"),
         QKeySequence(),
@@ -555,7 +619,7 @@ void SLMainWindow::initActions()
         ui->btn_portrait);
     m_actions[actPortrait]->setCheckable(true);
 
-    m_actions[actLandscape] = createAction(
+    createAction(
         actLandscape,
         tr("Landscape"),
         QKeySequence(),
@@ -563,28 +627,39 @@ void SLMainWindow::initActions()
         ui->btn_landscape);
     m_actions[actLandscape]->setCheckable(true);
 
-    m_actions[actPrint] = createAction(
+    createAction(
         actPrint,
         tr("Print"),
         QKeySequence(),
         ":/print-icon.png",
         ui->btn_print);
 
-    m_actions[actPrintPreview] = createAction(
+    createAction(
         actPrintPreview,
         tr("Print Preview"),
         QKeySequence(tr("Ctrl+P")),
         ":/print-preview-icon.png",
         ui->btn_preview);
 
-    m_actions[actShowButtonText] = createAction(
+    createAction(
         actShowButtonText,
         tr("Show Buttons Text"));
     m_actions[actShowButtonText]->setCheckable(true);
 
-    m_actions[actAbout] = createAction(
+    createAction(
         actAbout,
         tr("About"));
+
+    createAction(
+        actPaperSize,
+        tr("Set Paper Size"));
+
+    createAction(
+        actExportImage,
+        tr("Export As Image"),
+        QKeySequence(),
+        ":/add-image-icon.png",
+        ui->btn_exportImage);
 
     connect(m_actions[actNew], &QAction::triggered, this, &SLMainWindow::startNewDocument);
     connect(m_actions[actOpen], &QAction::triggered, this, &SLMainWindow::loadFromFile);
@@ -607,6 +682,8 @@ void SLMainWindow::initActions()
     connect(m_actions[actPrintPreview], &QAction::triggered, this, &SLMainWindow::printPreview);
     connect(m_actions[actShowButtonText], &QAction::triggered, this, &SLMainWindow::updateButtonsTextVisibility);
     connect(m_actions[actAbout], &QAction::triggered, this, &SLMainWindow::about);
+    connect(m_actions[actPaperSize], &QAction::triggered, this, &SLMainWindow::setPaperSize);
+    connect(m_actions[actExportImage], &QAction::triggered, this, &SLMainWindow::exportAsImage);
     // add all actions to main window
     addActions(m_actions.values());
 
@@ -620,6 +697,8 @@ void SLMainWindow::initMainMenu()
     fileMenu->addAction(m_actions[actSave]);
     fileMenu->addAction(m_actions[actSaveAs]);
     fileMenu->addSeparator();
+    fileMenu->addAction(m_actions[actExportImage]);
+    fileMenu->addSeparator();
     fileMenu->addAction(m_actions[actPrint]);
     fileMenu->addAction(m_actions[actPrintPreview]);
     QMenu* editMenu = menuBar()->addMenu(tr("&Edit"));
@@ -629,6 +708,8 @@ void SLMainWindow::initMainMenu()
     editMenu->addAction(m_actions[actPaste]);
     editMenu->addAction(m_actions[actAddImage]);
     editMenu->addAction(m_actions[actAddText]);
+    editMenu->addSeparator();
+    editMenu->addAction(m_actions[actPaperSize]);
     QMenu* viewMenu = menuBar()->addMenu(tr("&View"));
     viewMenu->addAction(m_actions[actPortrait]);
     viewMenu->addAction(m_actions[actLandscape]);

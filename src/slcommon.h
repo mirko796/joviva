@@ -60,19 +60,66 @@ struct PaperFormatInfo
 };
 QList<PaperFormat> getPaperFormats();
 PaperFormatInfo getPaperFormatInfo(const PaperFormat paperFormat);
+/**
+ * @brief normalizeSize - make sure that width is smaller/equal to height
+ * @param s
+ * @return
+ */
+QSize normalizeSize(const QSize s);
 
-struct DocumentSize
+class DocumentSize
 {
-    PaperFormat paperFormat;
-    QSize   sizeInPixels;
-    Qt::Orientation orientation;
+    PaperFormat m_paperFormat;
+    QSize   m_sizeInPixels;
+    Qt::Orientation m_orientation;
+public:
     DocumentSize() = default;
     DocumentSize(const PaperFormat pf, const QSize& sizeInPixels, const Qt::Orientation orientation)
-        : paperFormat(pf), sizeInPixels(sizeInPixels), orientation(orientation)
+        : m_paperFormat(pf), m_sizeInPixels(sizeInPixels), m_orientation(orientation)
     {
 
     }
+    bool operator == (const DocumentSize& other) const
+    {
+        return m_paperFormat == other.m_paperFormat &&
+               m_sizeInPixels == other.m_sizeInPixels &&
+               m_orientation == other.m_orientation;
+    }
+
+    QString toString() const
+    {
+        return QString("%1 %2x%3 %4")
+            .arg(getPaperFormatInfo(m_paperFormat).name)
+            .arg(m_sizeInPixels.width())
+            .arg(m_sizeInPixels.height())
+            .arg(m_orientation == Qt::Orientation::Vertical ? "Portrait" : "Landscape");
+    }
+    PaperFormat paperFormat() const
+    {
+        return m_paperFormat;
+    }
+    void setPaperFormat(PaperFormat newPaperFormat)
+    {
+        m_paperFormat = newPaperFormat;
+    }
+    QSize sizeInPixels() const
+    {
+        return m_sizeInPixels;
+    }
+    void setSizeInPixels(const QSize &newSizeInPixels)
+    {
+        m_sizeInPixels = SL::normalizeSize(newSizeInPixels);
+    }
+    Qt::Orientation orientation() const
+    {
+        return m_orientation;
+    }
+    void setOrientation(Qt::Orientation newOrientation)
+    {
+        m_orientation = newOrientation;
+    }
 };
+
 
 double normalizedAngle(const double angle);
 QString defaultFileFilter();

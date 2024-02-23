@@ -25,6 +25,7 @@ public:
     JSONKEY JK_PAPER_HEIGHT = "paper_height";
     JSONKEY JK_ORIENTATION = "orientation";
     JSONKEY JK_PROVIDER = "provider";
+    JSONKEY JK_PAPERFORMAT = "paper_format";
 
     enum JsonFlags {
         jfItemsOnly,
@@ -37,7 +38,7 @@ public:
     void    addTextItem(const SL::TextParams &textParams);
     QSize paperSize() const;
     void setPaperSize(const QSize &newPaperSize);
-
+    QSize paperSizeWithOrientation() const;
     Qt::Orientation orientation() const;
     void setOrientation(Qt::Orientation newOrientation);
 
@@ -47,6 +48,9 @@ public:
 
     QJsonObject asJson(const JsonFlags flags) const;
     bool fromJson(const QJsonObject& obj, const JsonFlags flags);
+    SL::DocumentSize documentSize() const;
+    void setDocumentSize(const SL::DocumentSize &newDocumentSize);
+
 public slots:
     void    clearSelection();
     void    removeAllItems();
@@ -72,8 +76,7 @@ protected:
     ItemId m_lastItemId = 0;
     QHash<ItemId,SLGraphicsItem*> m_items;
     SLGraphicsScene m_scene;
-    QSize   m_paperSize = QSize(210,297);
-    Qt::Orientation m_orientation = Qt::Vertical;
+    SL::DocumentSize m_documentSize;
     SLImageProvider m_provider;
     QSet<SLGraphicsItem*> m_changedItems;
     QTimer m_itemsChangedTimer;

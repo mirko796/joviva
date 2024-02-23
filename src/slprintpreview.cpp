@@ -2,6 +2,24 @@
 #include <QPrintPreviewDialog>
 #include <QPrinter>
 #include <QPrintDialog>
+
+QPageSize pageSizeFromDocumentSize(const SL::DocumentSize& docsize)
+{
+    switch (docsize.paperFormat()) {
+    case SL::psA4:
+        return QPageSize(QPageSize::A4);
+    case SL::psB4:
+        return QPageSize(QPageSize::B4);
+    case SL::psLetter:
+        return QPageSize(QPageSize::Letter);
+    case SL::psLegal:
+        return QPageSize(QPageSize::Legal);
+    default:
+        break;
+    }
+
+    return QPageSize(docsize.sizeInPixels());
+}
 SLPrintPreview::SLPrintPreview(SLGraphicsView *view) :
     m_view(view),
     m_orientation(Qt::Vertical)
@@ -9,15 +27,14 @@ SLPrintPreview::SLPrintPreview(SLGraphicsView *view) :
 
 }
 
-void SLPrintPreview::printPreview()
+void SLPrintPreview::printPreview(const SL::DocumentSize& docsize)
 {
     const QPageLayout::Orientation orientation =
-            m_orientation == Qt::Vertical ? QPageLayout::Portrait : QPageLayout::Landscape;
-
+        docsize.orientation() == Qt::Vertical ? QPageLayout::Portrait : QPageLayout::Landscape;
     QPrinter printer(QPrinter::HighResolution);
     printer.setPageOrientation( orientation );
-    printer.setPageSize(QPageSize(QPageSize::A4));
-    printer.setFullPage(true);
+    printer.setPageSize( pageSizeFromDocumentSize(docsize) );
+//    printer.setFullPage(true);
 
 
     QPrintPreviewDialog preview(&printer, m_view->parentWidget());
@@ -26,13 +43,13 @@ void SLPrintPreview::printPreview()
     preview.exec();
 }
 
-void SLPrintPreview::printDirect()
+void SLPrintPreview::printDirect(const SL::DocumentSize &docsize)
 {
     const QPageLayout::Orientation orientation =
-        m_orientation == Qt::Vertical ? QPageLayout::Portrait : QPageLayout::Landscape;
+        docsize.orientation() == Qt::Vertical ? QPageLayout::Portrait : QPageLayout::Landscape;
     QPrinter printer(QPrinter::HighResolution);
     printer.setPageOrientation( orientation );
-    printer.setPageSize(QPageSize(QPageSize::A4));
+    printer.setPageSize( pageSizeFromDocumentSize(docsize) );
     //    printer.setFullPage(true);
     QPrintDialog *dialog = new QPrintDialog(&printer);
     dialog->setWindowTitle(tr("Print Document"));
@@ -52,12 +69,3 @@ void SLPrintPreview::paintPage(QPrinter *printer)
     view->scene()->render(&painter, pageRect, view->sceneRect());
 }
 
-Qt::Orientation SLPrintPreview::orientation() const
-{
-    return m_orientation;
-}
-
-void SLPrintPreview::setOrientation(Qt::Orientation newOrientation)
-{
-    m_orientation = newOrientation;
-}

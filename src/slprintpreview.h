@@ -9,12 +9,9 @@ class SLPrintPreview : public QObject
     Q_OBJECT
 public:
     SLPrintPreview(SLGraphicsView* view);
-    Qt::Orientation orientation() const;
-    void setOrientation(Qt::Orientation newOrientation);
-
 public slots:
-    void    printPreview();
-    void    printDirect();
+    void    printPreview(const SL::DocumentSize &docsize);
+    void    printDirect(const SL::DocumentSize &docsize);
 private slots:
     void paintPage(QPrinter* printer);
 

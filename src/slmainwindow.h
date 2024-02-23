@@ -7,6 +7,7 @@
 #include <QSettings>
 #include <QTranslator>
 #include "jiaboutdlg.h"
+#include "jipapersizedlg.h"
 QT_BEGIN_NAMESPACE
 namespace Ui { class SLMainWindow; }
 QT_END_NAMESPACE
@@ -32,7 +33,8 @@ class SLMainWindow : public QMainWindow
         actLandscape,
         actShowButtonText,
         actAbout,
-        actPaperSize
+        actPaperSize,
+        actExportImage
     };
 
 public:
@@ -61,6 +63,7 @@ private:
     QString m_fileName;
     QJsonObject m_savedContent;
     JIAboutDlg  m_aboutDlg;
+    JIPaperSizeDlg m_paperSizeDlg;
 private slots:
     void    print();
     void    printPreview();
@@ -79,5 +82,8 @@ private slots:
     void    updateButtonsTextVisibility();
     void    onLanguageActionTriggered();
     void    about();
+    void    setPaperSize();
+    void    onPaperSizeDialogFinished(int result);
+    void    exportAsImage();
 };
 #endif // SLMAINWINDOW_H

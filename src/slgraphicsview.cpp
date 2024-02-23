@@ -10,6 +10,10 @@ SLGraphicsView::SLGraphicsView(QWidget *parent) :
     QGraphicsView(parent)
 {
     setScene(&m_scene);
+    m_documentSize.setSizeInPixels(SL::getPaperFormatInfo(SL::psA4).sizeInMM*10);
+    m_documentSize.setPaperFormat(SL::psA4);
+    m_documentSize.setOrientation(Qt::Vertical);
+
     setRenderHints(QPainter::Antialiasing | QPainter::SmoothPixmapTransform);
 
     connect(&m_scene, &QGraphicsScene::selectionChanged,
@@ -32,14 +36,23 @@ void SLGraphicsView::addPixmapItem(const QPixmap &pixmap)
     const auto id = m_provider.addPixmap(pixmap);
     auto item = new SLGraphicsPixmapItem(&m_provider);
     item->setPixmapId(id);
-    item->setRect(QRectF(50,50,100,100));
+
+    const QSize ps = paperSizeWithOrientation();
+    item->setRect(QRectF(
+        ps.width()*0.3, ps.height()*0.3,
+        ps.width()*0.4, ps.height()*0.4
+        ));
     addItem(item);    
 }
 
 void SLGraphicsView::addTextItem(const SL::TextParams &textParams)
 {
     auto item = new SLGraphicsTextItem;
-    item->setRect(QRectF(50,50,100,100));
+    const QSize ps = paperSizeWithOrientation();
+    item->setRect(QRectF(
+        ps.width()*0.3, ps.height()*0.3,
+        ps.width()*0.4, ps.height()*0.4
+        ));
     item->setTextParams(textParams);
     addItem(item);
 }
@@ -105,8 +118,8 @@ void SLGraphicsView::contextMenuEvent(QContextMenuEvent *event) {
 
 void SLGraphicsView::updateSceneSize()
 {
-    QSize s(m_paperSize);
-    if (m_orientation == Qt::Horizontal)
+    QSize s(m_documentSize.sizeInPixels());
+    if (m_documentSize.orientation() == Qt::Horizontal)
     {
         s.transpose();
     }
@@ -132,14 +145,27 @@ bool SLGraphicsView::eventFilter(QObject *obj, QEvent *event) {
     return QObject::eventFilter(obj, event);
 }
 
+SL::DocumentSize SLGraphicsView::documentSize() const
+{
+    return m_documentSize;
+}
+
+void SLGraphicsView::setDocumentSize(const SL::DocumentSize &newDocumentSize)
+{
+    m_documentSize = newDocumentSize;
+    updateSceneSize();
+    fitInView(m_scene.sceneRect(), Qt::KeepAspectRatio);
+    emit orientationChanged();
+}
+
 Qt::Orientation SLGraphicsView::orientation() const
 {
-    return m_orientation;
+    return m_documentSize.orientation();
 }
 
 void SLGraphicsView::setOrientation(Qt::Orientation newOrientation)
 {
-    m_orientation = newOrientation;
+    m_documentSize.setOrientation(newOrientation);
     updateSceneSize();
     fitInView(m_scene.sceneRect(), Qt::KeepAspectRatio);
     emit orientationChanged();
@@ -170,9 +196,10 @@ QJsonObject SLGraphicsView::asJson(const JsonFlags flags) const
         ++it;
     }
     ret[JK_ITEMS] = items;
-    ret[JK_PAPER_WIDTH] = m_paperSize.width();
-    ret[JK_PAPER_HEIGHT] = m_paperSize.height();
-    ret[JK_ORIENTATION] = m_orientation;
+    ret[JK_PAPER_WIDTH] = m_documentSize.sizeInPixels().width();
+    ret[JK_PAPER_HEIGHT] = m_documentSize.sizeInPixels().height();
+    ret[JK_ORIENTATION] = m_documentSize.orientation();
+    ret[JK_PAPERFORMAT] = m_documentSize.paperFormat();
     if (flags == jfItemsAndImages)
     {
         ret[JK_PROVIDER] = m_provider.asJson();
@@ -216,8 +243,16 @@ bool SLGraphicsView::fromJson(const QJsonObject &obj, const JsonFlags flags)
             return false;
         }
     }
-    m_paperSize = QSize(paperWidth, paperHeight);
-    m_orientation = orientation;
+    if (obj.contains(JK_PAPERFORMAT))
+    {
+        m_documentSize.setPaperFormat(static_cast<SL::PaperFormat>(obj[JK_PAPERFORMAT].toInt()));
+    }
+    else
+    {
+        m_documentSize.setPaperFormat(SL::psA4);
+    }
+    m_documentSize.setSizeInPixels(QSize(paperWidth, paperHeight));
+    m_documentSize.setOrientation(orientation);
     auto it = itemsObj.constBegin();
     while (it != itemsObj.constEnd()) {
         const ItemId id = it.key().toUInt();
@@ -244,6 +279,7 @@ bool SLGraphicsView::fromJson(const QJsonObject &obj, const JsonFlags flags)
         ++it;
     }
     clearSelection();
+    updateSceneSize();
     return true;
 }
 
@@ -343,11 +379,21 @@ void SLGraphicsView::removeItem(SLGraphicsItem *item)
 
 QSize SLGraphicsView::paperSize() const
 {
-    return m_paperSize;
+    return m_documentSize.sizeInPixels();
 }
 
 void SLGraphicsView::setPaperSize(const QSize &newPaperSize)
 {
-    m_paperSize = newPaperSize;
+    m_documentSize.setSizeInPixels(newPaperSize);
     updateSceneSize();
+}
+
+QSize SLGraphicsView::paperSizeWithOrientation() const
+{
+    QSize ret = paperSize();
+    if (orientation() == Qt::Horizontal)
+    {
+        ret.transpose();
+    }
+    return ret;
 }
