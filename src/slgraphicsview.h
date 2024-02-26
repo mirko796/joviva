@@ -55,6 +55,7 @@ public slots:
     void    clearSelection();
     void    removeAllItems();
     void    removeItem(SLGraphicsItem* item);
+    void    fitToView();
 signals:
     void    selectionChanged();
     void    itemRotationChangedByUser(SLGraphicsItem* item, double rotation);
@@ -79,6 +80,7 @@ protected:
     SL::DocumentSize m_documentSize;
     SLImageProvider m_provider;
     QSet<SLGraphicsItem*> m_changedItems;
+    bool    m_paperSizeChanged = false;
     QTimer m_itemsChangedTimer;
     bool    m_mousePressed = false;
 

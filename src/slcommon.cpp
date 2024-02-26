@@ -1,6 +1,8 @@
 #include "slcommon.h"
 #include <math.h>
-
+#include <QFile>
+#include <QFileDialog>
+#include <QCoreApplication>
 namespace SL
 {
 
@@ -116,6 +118,60 @@ void showQuestionAsync(const QString& title, const QString& text, const QHash<QM
 QSize normalizeSize(const QSize s)
 {
     return QSize(qMin(s.width(), s.height()), qMax(s.width(), s.height()));
+}
+
+void showOpenFileDialog(QWidget *parent,
+              const QString &caption,
+              const QString &dir,
+              const QString &filter,
+              const std::function<void(const QString&, const QByteArray&)>& fileContentReady)
+{
+#ifdef Q_OS_WASM
+    QFileDialog::getOpenFileContent(filter, fileContentReady);
+#else
+    const QString filename = QFileDialog::getOpenFileName(parent, caption,
+                                                          dir,
+                                                          filter);
+    if (filename.isEmpty())
+        return;
+    QFile file(filename);
+    if (!file.open(QIODevice::ReadOnly))
+    {
+        QMessageBox::warning(parent, qApp->applicationName(), QObject::tr("Failed to open file %1 for reading").arg(filename));
+        return;
+    }
+    fileContentReady(filename, file.readAll());
+#endif
+}
+
+void showSaveFileDialog(QWidget *parent,
+                        const QString &caption,
+                        const QString &dir,
+                        const QString &filter,
+                        const QString &fileHint,
+                        const QString &defaultExtension,
+                        const QByteArray &fileContent)
+{
+#ifdef Q_OS_WASM
+    QFileDialog::saveFileContent(fileContent, fileHint);
+#else
+    QString filename = QFileDialog::getSaveFileName(parent, caption,
+                                                    dir,
+                                                    filter);
+    if (filename.isEmpty())
+        return;
+    if (!filename.endsWith(defaultExtension)) {
+        filename+=QString(".%1").arg(SL::DefaultExtension);
+    }
+
+    QFile file(filename);
+    if (!file.open(QIODevice::WriteOnly)) {
+        QMessageBox::warning(parent, qApp->applicationName(), QObject::tr("Failed to open file %1 for writing").arg(filename));
+        return;
+    }
+    file.write(fileContent);
+    file.close();
+#endif
 }
 
 }

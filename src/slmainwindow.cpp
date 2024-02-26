@@ -130,8 +130,8 @@ void SLMainWindow::updateWindowTitle()
     QString title = QString("JovIva %1 - Simple Image Editor").arg(APP_VERSION);
     if (m_fileName.size()) {
         const QString basename = QFileInfo(m_fileName).fileName();
-        const QString modified = m_savedContent==ui->graphicsView->asJson(SLGraphicsView::jfItemsOnly) ? "" : "*";
-        title+=QString(" [ %1 %2]").arg(basename,modified);
+        const QString modifiedMarker = isModified() ? "*" : "";
+        title+=QString(" [ %1 %2]").arg(basename,modifiedMarker);
     }
     setWindowTitle(title);
 }
@@ -159,11 +159,64 @@ void SLMainWindow::pasteImageWasm(const QByteArray &data)
 
 }
 
+void SLMainWindow::showEvent(QShowEvent *event)
+{
+    QMainWindow::showEvent(event);
+    QTimer::singleShot(100, ui->graphicsView, &SLGraphicsView::fitToView);
+}
+
+void SLMainWindow::closeEvent(QCloseEvent *event)
+{
+    if (isModified()) {
+        const auto btn =
+            QMessageBox::question(this, qApp->applicationName(), tr("Do you want to save changes?"),
+                                  QMessageBox::Yes|QMessageBox::No|QMessageBox::Cancel,
+                                  QMessageBox::Yes);
+        if (btn==QMessageBox::Yes) {
+            saveToFile();
+            event->accept();
+        } else if (btn==QMessageBox::Cancel) {
+            event->ignore();
+        } else {
+            event->accept();
+        }
+    } else {
+        event->accept();
+    }
+}
+
 void SLMainWindow::setFileName(const QString &fileName)
 {
     m_fileName = fileName;
     updateWindowTitle();
     updateActions();
+}
+
+bool SLMainWindow::isModified() const
+{
+    if (ui->graphicsView->itemsCount()==0) {
+        return false;
+    }
+    return m_savedContent!=ui->graphicsView->asJson(SLGraphicsView::jfItemsOnly);
+}
+
+void SLMainWindow::ensureAllSaved(std::function<void()> onProceed)
+{
+    if (isModified()) {
+        auto onConfirmed = [this, onProceed](){
+            saveToFile();
+            onProceed();
+        };
+        SL::showQuestionAsync(
+            tr("Save Changes"), tr("Do you want to save changes?"),
+            {
+                { QMessageBox::Yes, onConfirmed },
+                { QMessageBox::No, onProceed },
+                { QMessageBox::Cancel, nullptr }
+            });
+    } else {
+        onProceed();
+    }
 }
 
 void SLMainWindow::print()
@@ -223,30 +276,6 @@ void SLMainWindow::pasteContent()
 #endif
 }
 
-// TODO: move this to SL common and make the same for savefile
-void openFile(QWidget *parent,
-                     const QString &caption,
-                     const QString &dir,
-                     const QString &filter,
-                     const std::function<void(const QString&, const QByteArray&)>& fileContentReady)
-{
-#ifdef Q_OS_WASM
-    QFileDialog::getOpenFileContent(filter, fileContentReady);
-#else
-    const QString filename = QFileDialog::getOpenFileName(parent, caption,
-                                                          dir,
-                                                          filter);
-    if (filename.isEmpty())
-        return;
-    QFile file(filename);
-    if (!file.open(QIODevice::ReadOnly))
-    {
-        QMessageBox::warning(parent, qApp->applicationName(), QObject::tr("Failed to open file %1 for reading").arg(filename));
-        return;
-    }
-    fileContentReady(filename, file.readAll());
-#endif
-}
 void SLMainWindow::addImageFromLocalFile()
 {
     // do the same using getOpenFileContent
@@ -267,7 +296,7 @@ void SLMainWindow::addImageFromLocalFile()
             }
         }
     };
-    openFile(this, tr("Open Image File"), QStandardPaths::writableLocation(QStandardPaths::DesktopLocation),
+    SL::showOpenFileDialog(this, tr("Open Image File"), QStandardPaths::writableLocation(QStandardPaths::DesktopLocation),
              "Image Files (*.jpg *.jpeg *.png *.tiff *.bmp)", fileContentReady);
 }
 
@@ -281,35 +310,32 @@ void SLMainWindow::startNewDocument()
             ui->graphicsView->asJson(SLGraphicsView::jfItemsOnly)
             );
         updateActions();
+        ui->graphicsView->fitToView();
     };
-    if (ui->graphicsView->itemsCount()>0) {
-        // ask user for confirmation in a async way so it will work with wasm too
-        SL::showQuestionAsync(tr("New Document"), tr("Are you sure you want to start new documen2t?"),
-                               {
-                                    { QMessageBox::Yes, onConfirmed },
-                                    { QMessageBox::No, nullptr }
-                                                                                                       });
-    } else {
-        onConfirmed();
-    }
+    ensureAllSaved( onConfirmed );
 }
 
 void SLMainWindow::saveFile(const QString& filename)
 {
-    QJsonObject obj = ui->graphicsView->asJson(SLGraphicsView::jfItemsAndImages);
-    QJsonDocument doc(obj);
-    const QString json = doc.toJson(QJsonDocument::Indented);
     QFile file(filename);
     if (!file.open(QIODevice::WriteOnly)) {
         QMessageBox::warning(this, qApp->applicationName(), tr("Failed to open file %1 for writing").arg(filename));
         return;
     }
-    file.write(json.toUtf8());
+    const QByteArray ba( saveToByteArray() );
+    file.write(ba);
     file.close();
     m_savedContent=ui->graphicsView->asJson(SLGraphicsView::jfItemsOnly);
     setFileName(filename);
 }
 
+QByteArray SLMainWindow::saveToByteArray() const
+{
+    QJsonObject obj = ui->graphicsView->asJson(SLGraphicsView::jfItemsAndImages);
+    QJsonDocument doc(obj);
+    const QString json = doc.toJson(QJsonDocument::Indented);
+    return json.toUtf8();
+}
 void SLMainWindow::saveToFile()
 {
     if (m_fileName.isEmpty()) {
@@ -322,26 +348,32 @@ void SLMainWindow::saveToFile()
 void SLMainWindow::saveAsToFile()
 {
     const QString desktopPath = QStandardPaths::writableLocation(QStandardPaths::DesktopLocation);
-    QString filename = QFileDialog::getSaveFileName(this, tr("Save File"),
-                                                    desktopPath,
-                                                    SL::defaultFileFilter());
-    if (filename.isEmpty())
-        return;
-    if (!filename.endsWith(SL::DefaultExtension)) {
-        filename+=QString(".%1").arg(SL::DefaultExtension);
-    }
-    saveFile(filename);
+    const QByteArray data( saveToByteArray() );
+    SL::showSaveFileDialog(
+        this, tr("Save File"),
+        desktopPath,
+        SL::defaultFileFilter(),
+        m_fileName.isEmpty() ? tr("Untitled.ji") : QFileInfo(m_fileName).fileName(),
+        SL::DefaultExtension,
+        data);
 }
 
 void SLMainWindow::loadFromFile()
 {
-    const QString desktopPath = QStandardPaths::writableLocation(QStandardPaths::DesktopLocation);
-    const QString filename = QFileDialog::getOpenFileName(this, tr("Open File"),
-                                                          desktopPath,
-                                                          SL::defaultFileFilter());
-    if (filename.isEmpty())
-        return;
-    loadFile(filename);
+    auto onProceed = [this]() {
+        auto fileContentReady = [this](const QString &filename, const QByteArray &fileContent) {
+            loadFromByteArray(fileContent, filename);
+            ui->graphicsView->fitToView();
+        };
+
+        const QString desktopPath = QStandardPaths::writableLocation(QStandardPaths::DesktopLocation);
+        SL::showOpenFileDialog(
+            this, tr("Open File"),
+            desktopPath,
+            SL::defaultFileFilter(),
+            fileContentReady);
+    };
+    ensureAllSaved(onProceed);
 }
 
 void SLMainWindow::onItemsChanged()
@@ -362,6 +394,7 @@ void SLMainWindow::onItemsChanged()
     }
     updateActions();
     updateWindowTitle();
+    ui->graphicsView->fitToView();
 }
 
 void SLMainWindow::updateActions()
@@ -373,7 +406,7 @@ void SLMainWindow::updateActions()
     m_actions[actLandscape]->setChecked(orientation==Qt::Horizontal);
     m_actions[actPortrait]->setChecked(orientation==Qt::Vertical);
 
-    bool modified = m_savedContent!=ui->graphicsView->asJson(SLGraphicsView::jfItemsOnly) || m_fileName.isEmpty();
+    bool modified = isModified() || m_fileName.isEmpty();
 
     m_actions[actSave]->setEnabled(modified);
     m_actions[actSaveAs]->setEnabled(m_fileName.isEmpty()==false);
@@ -392,6 +425,7 @@ void SLMainWindow::undo()
     }
     updateActions();
     updateWindowTitle();
+    ui->graphicsView->fitToView();
 }
 
 void SLMainWindow::redo()
@@ -406,6 +440,7 @@ void SLMainWindow::redo()
     }
     updateActions();
     updateWindowTitle();
+    ui->graphicsView->fitToView();
 }
 
 void SLMainWindow::updateButtonsTextVisibility()
@@ -470,22 +505,23 @@ void SLMainWindow::onPaperSizeDialogFinished(int result)
 
 void SLMainWindow::exportAsImage()
 {
-    const QString desktopPath = QStandardPaths::writableLocation(QStandardPaths::DesktopLocation);
-    QString filename = QFileDialog::getSaveFileName(this, tr("Export As Image"),
-                                                    desktopPath,
-                                                    "PNG Files (*.png)");
-    if (filename.isEmpty())
-        return;
-    if (!filename.endsWith("png")) {
-        filename+=QString(".%1").arg("png");
-    }
-    //save content of view to image
     //save content of view to image
     const QSize paperSize = ui->graphicsView->paperSize();
     QImage img(paperSize,QImage::Format_ARGB32);
     QPainter painter(&img);
     ui->graphicsView->scene()->render(&painter, img.rect(), ui->graphicsView->sceneRect());
-    img.save(filename);
+    // save image as png to buffer
+    QByteArray bytes;
+    QBuffer buffer(&bytes);
+    buffer.open(QIODevice::WriteOnly);
+    img.save(&buffer, "PNG");
+
+    const QString desktopPath = QStandardPaths::writableLocation(QStandardPaths::DesktopLocation);
+    SL::showSaveFileDialog(
+        this, tr("Export As Image"),
+        desktopPath,
+        "PNG Files (*.png)",
+        "Untitled.png","png",bytes);
 }
 
 void SLMainWindow::addText(const QString& text)
@@ -510,6 +546,11 @@ void SLMainWindow::loadFile(const QString &filename)
     setFileName("");
     const QByteArray data = file.readAll();
     file.close();
+    loadFromByteArray(data, filename);
+}
+
+void SLMainWindow::loadFromByteArray(const QByteArray &data, const QString& filename)
+{
     QJsonParseError error;
     const QJsonDocument doc = QJsonDocument::fromJson(data, &error);
     if (error.error!=QJsonParseError::NoError) {
@@ -652,7 +693,10 @@ void SLMainWindow::initActions()
 
     createAction(
         actPaperSize,
-        tr("Set Paper Size"));
+        tr("Set Paper Size"),
+        QKeySequence(),
+        ":/paper-size-icon.png",
+        ui->btn_paperSize);
 
     createAction(
         actExportImage,

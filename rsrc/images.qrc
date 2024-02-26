@@ -24,5 +24,6 @@
         <file>saveas-icon.png</file>
         <file>github-icon.png</file>
         <file>author-icon.png</file>
+        <file>paper-size-icon.png</file>
     </qresource>
 </RCC>

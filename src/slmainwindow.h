@@ -43,16 +43,27 @@ public:
     ~SLMainWindow();
 
     void loadFile(const QString& fileName);
+    void loadFromByteArray(const QByteArray& data, const QString &filename);
     void saveFile(const QString& filename);
+    QByteArray saveToByteArray() const;
 
     void pasteTextWasm(const QString& text);
     void pasteImageWasm(const QByteArray& data);
 private:
+    void showEvent(QShowEvent *event) override;
+    void closeEvent(QCloseEvent *event) override;
     void initActions();
     void initMainMenu();
     void loadFromSettings();
     void updateWindowTitle();
     void setFileName(const QString& fileName);
+    bool isModified() const;
+    /**
+     * @brief ensureAllSaved
+     * @param onProceed function to be called if all data is saved
+     * @return
+     */
+    void ensureAllSaved(std::function<void()> onProceed);
     Ui::SLMainWindow *ui;
     QSettings* m_settings;
     Translators m_translators;

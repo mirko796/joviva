@@ -125,5 +125,18 @@ double normalizedAngle(const double angle);
 QString defaultFileFilter();
 
 void showQuestionAsync(const QString& title, const QString& text, const QHash<QMessageBox::Button, std::function<void()> > buttonsAndCallbacks, const QMessageBox::Button defaultButton=QMessageBox::NoButton);
+void showOpenFileDialog(QWidget *parent,
+                        const QString &caption,
+                        const QString &dir,
+                        const QString &filter,
+                        const std::function<void(const QString&, const QByteArray&)>& fileContentReady);
+void showSaveFileDialog(QWidget *parent,
+                        const QString &caption,
+                        const QString &dir,
+                        const QString &filter,
+                        const QString &fileHint,
+                        const QString &defaultExtension,
+                        const QByteArray &fileContent);
+
 }
 #endif // SLCOMMON_H

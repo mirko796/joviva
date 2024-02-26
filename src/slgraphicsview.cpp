@@ -60,7 +60,7 @@ void SLGraphicsView::addTextItem(const SL::TextParams &textParams)
 void SLGraphicsView::resizeEvent(QResizeEvent *event)
 {
     QGraphicsView::resizeEvent(event);
-    fitInView(m_scene.sceneRect(), Qt::KeepAspectRatio);
+    fitToView();
 }
 
 void SLGraphicsView::drawBackground(QPainter *painter, const QRectF &rect) {
@@ -155,6 +155,8 @@ void SLGraphicsView::setDocumentSize(const SL::DocumentSize &newDocumentSize)
     m_documentSize = newDocumentSize;
     updateSceneSize();
     fitInView(m_scene.sceneRect(), Qt::KeepAspectRatio);
+    m_paperSizeChanged = true;
+    onItemChanged();
     emit orientationChanged();
 }
 
@@ -168,6 +170,8 @@ void SLGraphicsView::setOrientation(Qt::Orientation newOrientation)
     m_documentSize.setOrientation(newOrientation);
     updateSceneSize();
     fitInView(m_scene.sceneRect(), Qt::KeepAspectRatio);
+    m_paperSizeChanged = true;
+    onItemChanged();
     emit orientationChanged();
 }
 
@@ -301,17 +305,18 @@ void SLGraphicsView::onItemChanged()
     {
         return;
     }
-    startItemsChangedTimer(1000);
+    startItemsChangedTimer(100);
 }
 
 void SLGraphicsView::sendItemsChangedIfAny()
 {
-    if (m_changedItems.size() == 0)
+    if ( (m_changedItems.size() == 0) && !m_paperSizeChanged)
     {
         return;
     }
-    qDebug()<<"Clearing changed items, had:"<<m_changedItems.count();
+    qDebug()<<"Clearing changed items, had:"<<m_changedItems.count()<<" paper size changed:"<<m_paperSizeChanged;
     m_changedItems.clear();
+    m_paperSizeChanged = false;
     emit itemsChanged();
 }
 
@@ -377,6 +382,11 @@ void SLGraphicsView::removeItem(SLGraphicsItem *item)
     emit itemsChanged();
 }
 
+void SLGraphicsView::fitToView()
+{
+    fitInView(m_scene.sceneRect(), Qt::KeepAspectRatio);
+}
+
 QSize SLGraphicsView::paperSize() const
 {
     return m_documentSize.sizeInPixels();
@@ -385,7 +395,9 @@ QSize SLGraphicsView::paperSize() const
 void SLGraphicsView::setPaperSize(const QSize &newPaperSize)
 {
     m_documentSize.setSizeInPixels(newPaperSize);
+    m_paperSizeChanged = true;
     updateSceneSize();
+    onItemChanged();
 }
 
 QSize SLGraphicsView::paperSizeWithOrientation() const
