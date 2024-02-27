@@ -1,0 +1,2 @@
+# path to the qmake of Qt installation you want to use
+QMAKE=~/Qt/6.5.2/macos/bin/qmake
