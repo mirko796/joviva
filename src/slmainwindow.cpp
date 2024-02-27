@@ -17,16 +17,6 @@
 #include <emscripten/bind.h>
 const char* byteArray = "Hello, World!";
 static SLMainWindow* g_mainWindow = nullptr;
-void myFunction(const int v) {
-    qDebug()<<"Value received:"<<v;
-    QTimer::singleShot(1000,[v]() {
-        qDebug()<<"Delayed:"<<v;
-    });
-}
-
-void myFunctionChar(std::string text) {
-    qDebug()<<"Text received:"<<text;
-}
 
 void pasteTextWasm(const std::string& text) {
     if (g_mainWindow) {
@@ -39,32 +29,14 @@ void pasteImageWasm(const std::string& b64) {
     g_mainWindow->pasteImageWasm(data);
 }
 
-std::string getByteArray() {
-    const int width=4000;
-    const int height=5000;
-    // create qimage 128*128 draw diagonal line and save to QByteArray as PNG
-    QImage img(width,height,QImage::Format_ARGB32);
-    QPainter painter(&img);
-    // draw vertical gradient green, yellow, red
-    QLinearGradient gradient(0,0,0,height);
-    gradient.setColorAt(0, Qt::green);
-    gradient.setColorAt(0.5, Qt::yellow);
-    gradient.setColorAt(1, Qt::red);
-    painter.setBrush(gradient);
-    painter.drawRect(0,0,width,height);
-    painter.setPen(QPen(Qt::black, 2));
-    painter.drawLine(0,0,width,height);
-    QByteArray byteArray;
-    QBuffer buffer(&byteArray);
-    buffer.open(QIODevice::WriteOnly);
-    img.save(&buffer, "PNG");
-    std::string ret = byteArray.toBase64().toStdString();
+std::string getImageAsBase64String() {
+    const QByteArray bytes(g_mainWindow->exportAsImageToByteArray());
+    std::string ret = bytes.toBase64().toStdString();
     return ret;
 }
+
 EMSCRIPTEN_BINDINGS(mylibrary) {
-    emscripten::function("myFunction", &myFunction);
-    emscripten::function("myFunctionChar", &myFunctionChar);
-    emscripten::function("getByteArray", &getByteArray, emscripten::allow_raw_pointers());
+    emscripten::function("getImageAsBase64String", &getImageAsBase64String);
     emscripten::function("pasteTextWasm", &pasteTextWasm);
     emscripten::function("pasteImageWasm", &pasteImageWasm);
 }
@@ -221,26 +193,24 @@ void SLMainWindow::ensureAllSaved(std::function<void()> onProceed)
 
 void SLMainWindow::print()
 {
+#ifdef Q_OS_WASM
+    emscripten_async_run_script("printImage();",100);
+#else
     ui->graphicsView->clearSelection();
     SLPrintPreview preview(ui->graphicsView);
     preview.printDirect(ui->graphicsView->documentSize());
-#if 0
-    //save content of view to image
-    QImage img(2100,2970,QImage::Format_ARGB32);
-    QPainter painter(&img);
-    ui->graphicsView->scene()->render(&painter, img.rect(), ui->graphicsView->sceneRect());
-    QString filePath = "/tmp/output.png"; // Replace with the path to your document
-    img.save(filePath);
-    // open url in browser
-    QDesktopServices::openUrl(QUrl::fromLocalFile(filePath));
 #endif
 }
 
 void SLMainWindow::printPreview()
 {
+#ifdef Q_OS_WASM
+    emscripten_async_run_script("openImageInBrowser();",100);
+#else
     ui->graphicsView->clearSelection();
     SLPrintPreview preview(ui->graphicsView);
     preview.printPreview(ui->graphicsView->documentSize());
+#endif
 }
 
 void SLMainWindow::pasteContent()
@@ -503,8 +473,9 @@ void SLMainWindow::onPaperSizeDialogFinished(int result)
     ui->graphicsView->setDocumentSize( dlg->getDocumentSize() );
 }
 
-void SLMainWindow::exportAsImage()
+QByteArray SLMainWindow::exportAsImageToByteArray()
 {
+    ui->graphicsView->clearSelection();
     //save content of view to image
     const QSize paperSize = ui->graphicsView->paperSize();
     QImage img(paperSize,QImage::Format_ARGB32);
@@ -515,6 +486,13 @@ void SLMainWindow::exportAsImage()
     QBuffer buffer(&bytes);
     buffer.open(QIODevice::WriteOnly);
     img.save(&buffer, "PNG");
+    buffer.close();
+    return bytes;
+}
+
+void SLMainWindow::exportAsImage()
+{
+    const QByteArray bytes( exportAsImageToByteArray() );
 
     const QString desktopPath = QStandardPaths::writableLocation(QStandardPaths::DesktopLocation);
     SL::showSaveFileDialog(

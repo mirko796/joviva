@@ -49,6 +49,8 @@ public:
 
     void pasteTextWasm(const QString& text);
     void pasteImageWasm(const QByteArray& data);
+
+    QByteArray exportAsImageToByteArray();
 private:
     void showEvent(QShowEvent *event) override;
     void closeEvent(QCloseEvent *event) override;
@@ -96,5 +98,6 @@ private slots:
     void    setPaperSize();
     void    onPaperSizeDialogFinished(int result);
     void    exportAsImage();
+
 };
 #endif // SLMAINWINDOW_H
