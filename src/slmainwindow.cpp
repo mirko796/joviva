@@ -319,13 +319,18 @@ void SLMainWindow::saveAsToFile()
 {
     const QString desktopPath = QStandardPaths::writableLocation(QStandardPaths::DesktopLocation);
     const QByteArray data( saveToByteArray() );
+    auto onSaved = [this](const QString &filename) {
+        m_savedContent = ui->graphicsView->asJson(SLGraphicsView::jfItemsOnly);
+        setFileName(filename);
+    };
     SL::showSaveFileDialog(
         this, tr("Save File"),
         desktopPath,
         SL::defaultFileFilter(),
         m_fileName.isEmpty() ? tr("Untitled.ji") : QFileInfo(m_fileName).fileName(),
         SL::DefaultExtension,
-        data);
+        data,
+        onSaved);
 }
 
 void SLMainWindow::loadFromFile()

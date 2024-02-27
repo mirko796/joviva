@@ -150,11 +150,14 @@ void showSaveFileDialog(QWidget *parent,
                         const QString &filter,
                         const QString &fileHint,
                         const QString &defaultExtension,
-                        const QByteArray &fileContent)
+                        const QByteArray &fileContent,
+                        std::function<void(const QString& filename)> onSaved)
 {
 #ifdef Q_OS_WASM
+    Q_UNUSED(onSaved);
     QFileDialog::saveFileContent(fileContent, fileHint);
 #else
+    Q_UNUSED(fileHint);
     QString filename = QFileDialog::getSaveFileName(parent, caption,
                                                     dir,
                                                     filter);
@@ -171,6 +174,9 @@ void showSaveFileDialog(QWidget *parent,
     }
     file.write(fileContent);
     file.close();
+    if (onSaved) {
+        onSaved(filename);
+    }
 #endif
 }
 

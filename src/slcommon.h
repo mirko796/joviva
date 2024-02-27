@@ -136,7 +136,8 @@ void showSaveFileDialog(QWidget *parent,
                         const QString &filter,
                         const QString &fileHint,
                         const QString &defaultExtension,
-                        const QByteArray &fileContent);
+                        const QByteArray &fileContent,
+                        std::function<void(const QString& filename)> onSaved = nullptr);
 
 }
 #endif // SLCOMMON_H
