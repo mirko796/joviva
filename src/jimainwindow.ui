@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <ui version="4.0">
- <class>SLMainWindow</class>
- <widget class="QMainWindow" name="SLMainWindow">
+ <class>JIMainWindow</class>
+ <widget class="QMainWindow" name="JIMainWindow">
   <property name="geometry">
    <rect>
     <x>0</x>
@@ -11,10 +11,10 @@
    </rect>
   </property>
   <property name="windowTitle">
-   <string>SLMainWindow</string>
+   <string>JIMainWindow</string>
   </property>
   <property name="styleSheet">
-   <string notr="true">#SLMainWindow, .QMainWindow {
+   <string notr="true">#JIMainWindow, .QMainWindow {
 background-color: rgb(170, 170, 170);
 }
 QToolButton {
@@ -326,12 +326,12 @@ QGraphicsView {
       <property name="orientation">
        <enum>Qt::Horizontal</enum>
       </property>
-      <widget class="SLGraphicsView" name="graphicsView">
+      <widget class="JIGraphicsView" name="graphicsView">
        <property name="styleSheet">
         <string notr="true"/>
        </property>
       </widget>
-      <widget class="SLSideBarWidget" name="mw_sidebar" native="true"/>
+      <widget class="JISideBarWidget" name="mw_sidebar" native="true"/>
      </widget>
     </item>
    </layout>
@@ -349,14 +349,14 @@ QGraphicsView {
  </widget>
  <customwidgets>
   <customwidget>
-   <class>SLGraphicsView</class>
+   <class>JIGraphicsView</class>
    <extends>QGraphicsView</extends>
-   <header>slgraphicsview.h</header>
+   <header>jigraphicsview.h</header>
   </customwidget>
   <customwidget>
-   <class>SLSideBarWidget</class>
+   <class>JISideBarWidget</class>
    <extends>QWidget</extends>
-   <header>slsidebarwidget.h</header>
+   <header>jisidebarwidget.h</header>
    <container>1</container>
   </customwidget>
  </customwidgets>

@@ -1,40 +1,40 @@
-#include "slgraphicsview.h"
+#include "jigraphicsview.h"
 #include <QGraphicsTextItem>
-#include "slgraphicspixmapitem.h"
-#include "slgraphicstextitem.h"
+#include "jigraphicspixmapitem.h"
+#include "jigraphicstextitem.h"
 #include <QMenu>
 #include <QContextMenuEvent>
 #include <QCoreApplication>
 #include <QTimer>
-SLGraphicsView::SLGraphicsView(QWidget *parent) :
+JIGraphicsView::JIGraphicsView(QWidget *parent) :
     QGraphicsView(parent)
 {
     setScene(&m_scene);
-    m_documentSize.setSizeInPixels(SL::getPaperFormatInfo(SL::psA4).sizeInMM*10);
-    m_documentSize.setPaperFormat(SL::psA4);
+    m_documentSize.setSizeInPixels(JI::getPaperFormatInfo(JI::psA4).sizeInMM*10);
+    m_documentSize.setPaperFormat(JI::psA4);
     m_documentSize.setOrientation(Qt::Vertical);
 
     setRenderHints(QPainter::Antialiasing | QPainter::SmoothPixmapTransform);
 
     connect(&m_scene, &QGraphicsScene::selectionChanged,
-            this, &SLGraphicsView::selectionChanged);
+            this, &JIGraphicsView::selectionChanged);
 
     updateSceneSize();
     m_itemsChangedTimer.setSingleShot(true);
     connect(&m_itemsChangedTimer, &QTimer::timeout,
-            this,&SLGraphicsView::sendItemsChangedIfAny);
+            this,&JIGraphicsView::sendItemsChangedIfAny);
     qApp->installEventFilter(this);
 }
 
-SLGraphicsView::~SLGraphicsView()
+JIGraphicsView::~JIGraphicsView()
 {
     qApp->removeEventFilter(this);
 }
 
-void SLGraphicsView::addPixmapItem(const QPixmap &pixmap)
+void JIGraphicsView::addPixmapItem(const QPixmap &pixmap)
 {
     const auto id = m_provider.addPixmap(pixmap);
-    auto item = new SLGraphicsPixmapItem(&m_provider);
+    auto item = new JIGraphicsPixmapItem(&m_provider);
     item->setPixmapId(id);
 
     const QSize ps = paperSizeWithOrientation();
@@ -45,9 +45,9 @@ void SLGraphicsView::addPixmapItem(const QPixmap &pixmap)
     addItem(item);    
 }
 
-void SLGraphicsView::addTextItem(const SL::TextParams &textParams)
+void JIGraphicsView::addTextItem(const JI::TextParams &textParams)
 {
-    auto item = new SLGraphicsTextItem;
+    auto item = new JIGraphicsTextItem;
     const QSize ps = paperSizeWithOrientation();
     item->setRect(QRectF(
         ps.width()*0.3, ps.height()*0.3,
@@ -57,13 +57,13 @@ void SLGraphicsView::addTextItem(const SL::TextParams &textParams)
     addItem(item);
 }
 
-void SLGraphicsView::resizeEvent(QResizeEvent *event)
+void JIGraphicsView::resizeEvent(QResizeEvent *event)
 {
     QGraphicsView::resizeEvent(event);
     fitToView();
 }
 
-void SLGraphicsView::drawBackground(QPainter *painter, const QRectF &rect) {
+void JIGraphicsView::drawBackground(QPainter *painter, const QRectF &rect) {
     // Fill the background with the custom color
     painter->fillRect(rect, Qt::gray);
 
@@ -71,11 +71,11 @@ void SLGraphicsView::drawBackground(QPainter *painter, const QRectF &rect) {
     QGraphicsView::drawBackground(painter, rect);
 }
 
-void SLGraphicsView::contextMenuEvent(QContextMenuEvent *event) {
+void JIGraphicsView::contextMenuEvent(QContextMenuEvent *event) {
     // get item at pos
     // if item is null, show default menu
     // else show item menu
-    SLGraphicsItem* item=dynamic_cast<SLGraphicsItem*>(this->itemAt(event->pos()));
+    JIGraphicsItem* item=dynamic_cast<JIGraphicsItem*>(this->itemAt(event->pos()));
     qDebug()<<"Item at:"<<event->pos()<<item;
     if (item)
     {
@@ -116,7 +116,7 @@ void SLGraphicsView::contextMenuEvent(QContextMenuEvent *event) {
 
 }
 
-void SLGraphicsView::updateSceneSize()
+void JIGraphicsView::updateSceneSize()
 {
     QSize s(m_documentSize.sizeInPixels());
     if (m_documentSize.orientation() == Qt::Horizontal)
@@ -126,7 +126,7 @@ void SLGraphicsView::updateSceneSize()
     m_scene.setSceneRect(QRectF(QPointF(0,0), s));
 }
 
-bool SLGraphicsView::eventFilter(QObject *obj, QEvent *event) {
+bool JIGraphicsView::eventFilter(QObject *obj, QEvent *event) {
     if (event->type() == QEvent::MouseButtonPress) {
 //        QMouseEvent *mouseEvent = static_cast<QMouseEvent *>(event);
         m_mousePressed = true;
@@ -145,12 +145,12 @@ bool SLGraphicsView::eventFilter(QObject *obj, QEvent *event) {
     return QObject::eventFilter(obj, event);
 }
 
-SL::DocumentSize SLGraphicsView::documentSize() const
+JI::DocumentSize JIGraphicsView::documentSize() const
 {
     return m_documentSize;
 }
 
-void SLGraphicsView::setDocumentSize(const SL::DocumentSize &newDocumentSize)
+void JIGraphicsView::setDocumentSize(const JI::DocumentSize &newDocumentSize)
 {
     m_documentSize = newDocumentSize;
     updateSceneSize();
@@ -160,12 +160,12 @@ void SLGraphicsView::setDocumentSize(const SL::DocumentSize &newDocumentSize)
     emit orientationChanged();
 }
 
-Qt::Orientation SLGraphicsView::orientation() const
+Qt::Orientation JIGraphicsView::orientation() const
 {
     return m_documentSize.orientation();
 }
 
-void SLGraphicsView::setOrientation(Qt::Orientation newOrientation)
+void JIGraphicsView::setOrientation(Qt::Orientation newOrientation)
 {
     m_documentSize.setOrientation(newOrientation);
     updateSceneSize();
@@ -175,22 +175,22 @@ void SLGraphicsView::setOrientation(Qt::Orientation newOrientation)
     emit orientationChanged();
 }
 
-SLGraphicsItem *SLGraphicsView::selectedItem() const
+JIGraphicsItem *JIGraphicsView::selectedItem() const
 {
     auto items = m_scene.selectedItems();
     if (items.isEmpty())
     {
         return nullptr;
     }
-    return dynamic_cast<SLGraphicsItem*>(items.first());
+    return dynamic_cast<JIGraphicsItem*>(items.first());
 }
 
-int SLGraphicsView::itemsCount() const
+int JIGraphicsView::itemsCount() const
 {
     return m_items.count();
 }
 
-QJsonObject SLGraphicsView::asJson(const JsonFlags flags) const
+QJsonObject JIGraphicsView::asJson(const JsonFlags flags) const
 {
     QJsonObject ret;
     QJsonObject items;
@@ -211,7 +211,7 @@ QJsonObject SLGraphicsView::asJson(const JsonFlags flags) const
     return ret;
 }
 
-bool SLGraphicsView::fromJson(const QJsonObject &obj, const JsonFlags flags)
+bool JIGraphicsView::fromJson(const QJsonObject &obj, const JsonFlags flags)
 {
     if (flags == jfItemsAndImages) {
         m_provider.clear();
@@ -249,11 +249,11 @@ bool SLGraphicsView::fromJson(const QJsonObject &obj, const JsonFlags flags)
     }
     if (obj.contains(JK_PAPERFORMAT))
     {
-        m_documentSize.setPaperFormat(static_cast<SL::PaperFormat>(obj[JK_PAPERFORMAT].toInt()));
+        m_documentSize.setPaperFormat(static_cast<JI::PaperFormat>(obj[JK_PAPERFORMAT].toInt()));
     }
     else
     {
-        m_documentSize.setPaperFormat(SL::psA4);
+        m_documentSize.setPaperFormat(JI::psA4);
     }
     m_documentSize.setSizeInPixels(QSize(paperWidth, paperHeight));
     m_documentSize.setOrientation(orientation);
@@ -261,15 +261,15 @@ bool SLGraphicsView::fromJson(const QJsonObject &obj, const JsonFlags flags)
     while (it != itemsObj.constEnd()) {
         const ItemId id = it.key().toUInt();
         const QJsonObject itemObj = it.value().toObject();
-        const ItemType type = static_cast<ItemType>(itemObj[SLGraphicsItem::JK_TYPE].toInt());
-        qDebug()<<"Item type:"<<type<< SLGraphicsPixmapItem::Type << SLGraphicsTextItem::Type<<m_lastItemId;
-        SLGraphicsItem* item = nullptr;
+        const ItemType type = static_cast<ItemType>(itemObj[JIGraphicsItem::JK_TYPE].toInt());
+        qDebug()<<"Item type:"<<type<< JIGraphicsPixmapItem::Type << JIGraphicsTextItem::Type<<m_lastItemId;
+        JIGraphicsItem* item = nullptr;
         switch (static_cast<int>(type)) {
-        case SLGraphicsPixmapItem::Type:
-            item = new SLGraphicsPixmapItem(&m_provider);
+        case JIGraphicsPixmapItem::Type:
+            item = new JIGraphicsPixmapItem(&m_provider);
             break;
-        case SLGraphicsTextItem::Type:
-            item = new SLGraphicsTextItem;
+        case JIGraphicsTextItem::Type:
+            item = new JIGraphicsTextItem;
             break;
         default:
             qWarning()<<"Unknown item type:"<<type;
@@ -287,19 +287,19 @@ bool SLGraphicsView::fromJson(const QJsonObject &obj, const JsonFlags flags)
     return true;
 }
 
-void SLGraphicsView::onItemRotationChangedByUser(double rotation)
+void JIGraphicsView::onItemRotationChangedByUser(double rotation)
 {
     qDebug()<<"View item rotation changed by user:"<<rotation;
-    auto ptr = dynamic_cast<SLGraphicsItem*>(QObject::sender());
+    auto ptr = dynamic_cast<JIGraphicsItem*>(QObject::sender());
     if (ptr)
     {
         emit itemRotationChangedByUser(ptr, rotation);
     }
 }
 
-void SLGraphicsView::onItemChanged()
+void JIGraphicsView::onItemChanged()
 {
-    auto ptr = dynamic_cast<SLGraphicsItem*>(QObject::sender());
+    auto ptr = dynamic_cast<JIGraphicsItem*>(QObject::sender());
     m_changedItems.insert(ptr);
     if (m_mousePressed)
     {
@@ -308,7 +308,7 @@ void SLGraphicsView::onItemChanged()
     startItemsChangedTimer(100);
 }
 
-void SLGraphicsView::sendItemsChangedIfAny()
+void JIGraphicsView::sendItemsChangedIfAny()
 {
     if ( (m_changedItems.size() == 0) && !m_paperSizeChanged)
     {
@@ -320,7 +320,7 @@ void SLGraphicsView::sendItemsChangedIfAny()
     emit itemsChanged();
 }
 
-void SLGraphicsView::startItemsChangedTimer(const int msInterval)
+void JIGraphicsView::startItemsChangedTimer(const int msInterval)
 {
     if (m_itemsChangedTimer.isActive()) {
         m_itemsChangedTimer.stop();
@@ -328,7 +328,7 @@ void SLGraphicsView::startItemsChangedTimer(const int msInterval)
     m_itemsChangedTimer.start(msInterval);
 }
 
-void SLGraphicsView::addItemWithId(SLGraphicsItem *item, const ItemId id)
+void JIGraphicsView::addItemWithId(JIGraphicsItem *item, const ItemId id)
 {
     m_items.insert(id, item);
     m_scene.addItem(item);
@@ -338,20 +338,20 @@ void SLGraphicsView::addItemWithId(SLGraphicsItem *item, const ItemId id)
     {
         m_lastItemId = id;
     }
-    connect(item, &SLGraphicsItem::itemChanged,
-            this, &SLGraphicsView::onItemChanged);
-    connect( item, &SLGraphicsItem::rotationChangedByUser,
-            this, &SLGraphicsView::onItemRotationChangedByUser);
+    connect(item, &JIGraphicsItem::itemChanged,
+            this, &JIGraphicsView::onItemChanged);
+    connect( item, &JIGraphicsItem::rotationChangedByUser,
+            this, &JIGraphicsView::onItemRotationChangedByUser);
 }
 
-void SLGraphicsView::addItem(SLGraphicsItem *item)
+void JIGraphicsView::addItem(JIGraphicsItem *item)
 {
     const ItemId id = ++m_lastItemId;
     // get max sort order
     int maxSortOrder = 0;
     for (auto _item : m_scene.items())
     {
-        auto item = dynamic_cast<SLGraphicsItem*>(_item);
+        auto item = dynamic_cast<JIGraphicsItem*>(_item);
         maxSortOrder = qMax(maxSortOrder, item->sortOrder());
     }
     item->setSortOrder(maxSortOrder+1);
@@ -360,19 +360,19 @@ void SLGraphicsView::addItem(SLGraphicsItem *item)
     emit itemsChanged();
 }
 
-void SLGraphicsView::clearSelection()
+void JIGraphicsView::clearSelection()
 {
     m_scene.clearSelection();
 }
 
-void SLGraphicsView::removeAllItems()
+void JIGraphicsView::removeAllItems()
 {
     m_scene.clear();
     m_lastItemId = 0;
     m_items.clear();
 }
 
-void SLGraphicsView::removeItem(SLGraphicsItem *item)
+void JIGraphicsView::removeItem(JIGraphicsItem *item)
 {
     const ItemId id = m_items.key(item);
     qDebug()<<"Delete item:"<<item<<id;
@@ -382,17 +382,17 @@ void SLGraphicsView::removeItem(SLGraphicsItem *item)
     emit itemsChanged();
 }
 
-void SLGraphicsView::fitToView()
+void JIGraphicsView::fitToView()
 {
     fitInView(m_scene.sceneRect(), Qt::KeepAspectRatio);
 }
 
-QSize SLGraphicsView::paperSize() const
+QSize JIGraphicsView::paperSize() const
 {
     return m_documentSize.sizeInPixels();
 }
 
-void SLGraphicsView::setPaperSize(const QSize &newPaperSize)
+void JIGraphicsView::setPaperSize(const QSize &newPaperSize)
 {
     m_documentSize.setSizeInPixels(newPaperSize);
     m_paperSizeChanged = true;
@@ -400,7 +400,7 @@ void SLGraphicsView::setPaperSize(const QSize &newPaperSize)
     onItemChanged();
 }
 
-QSize SLGraphicsView::paperSizeWithOrientation() const
+QSize JIGraphicsView::paperSizeWithOrientation() const
 {
     QSize ret = paperSize();
     if (orientation() == Qt::Horizontal)

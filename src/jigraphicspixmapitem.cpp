@@ -1,20 +1,20 @@
-#include "slgraphicspixmapitem.h"
+#include "jigraphicspixmapitem.h"
 #include <QPainter>
 
-SLGraphicsPixmapItem::SLGraphicsPixmapItem(const SLImageProvider *provider) :
-    SLGraphicsItem(),
+JIGraphicsPixmapItem::JIGraphicsPixmapItem(const JIImageProvider *provider) :
+    JIGraphicsItem(),
     m_provider(provider)
 {    
     m_transparentBackground = false;
 }
 
-void SLGraphicsPixmapItem::setPixmapId(const SLImageProvider::PixmapId &pixmapId)
+void JIGraphicsPixmapItem::setPixmapId(const JIImageProvider::PixmapId &pixmapId)
 {
     m_pixmapId = pixmapId;
     update();
 }
 
-QPixmap SLGraphicsPixmapItem::pixmap() const
+QPixmap JIGraphicsPixmapItem::pixmap() const
 {
     const QPixmap* pixmap = m_provider->pixmap(m_pixmapId, transparentBackground());
     if (pixmap == nullptr)
@@ -22,16 +22,16 @@ QPixmap SLGraphicsPixmapItem::pixmap() const
     return *pixmap;
 }
 
-QJsonObject SLGraphicsPixmapItem::asJson() const
+QJsonObject JIGraphicsPixmapItem::asJson() const
 {
-    QJsonObject obj = SLGraphicsItem::asJson();
+    QJsonObject obj = JIGraphicsItem::asJson();
     obj[JK_PIXMAPID] = m_pixmapId;
     return obj;
 }
 
-bool SLGraphicsPixmapItem::fromJson(const QJsonObject &obj)
+bool JIGraphicsPixmapItem::fromJson(const QJsonObject &obj)
 {
-    if (!SLGraphicsItem::fromJson(obj))
+    if (!JIGraphicsItem::fromJson(obj))
         return false;
     if (!obj.contains(JK_PIXMAPID))
         return false;
@@ -39,17 +39,17 @@ bool SLGraphicsPixmapItem::fromJson(const QJsonObject &obj)
     return true;
 }
 
-void SLGraphicsPixmapItem::transparentBackgroundChangedEvent()
+void JIGraphicsPixmapItem::transparentBackgroundChangedEvent()
 {
     update();
 }
 
-QSizeF SLGraphicsPixmapItem::aspectRatio() const
+QSizeF JIGraphicsPixmapItem::aspectRatio() const
 {
     return pixmap().size();
 }
 
-void SLGraphicsPixmapItem::render(QPainter *painter)
+void JIGraphicsPixmapItem::render(QPainter *painter)
 {
     const auto pix = pixmap();
     painter->drawPixmap(rect(), pix, pix.rect());

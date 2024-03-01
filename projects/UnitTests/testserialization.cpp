@@ -2,18 +2,18 @@
 #pragma GCC diagnostic ignored "-Wreturn-type"
 #include "utest.h"
 #pragma GCC diagnostic pop
-#include "slgraphicspixmapitem.h"
-#include "slgraphicstextitem.h"
-#include "slgraphicsview.h"
+#include "jigraphicspixmapitem.h"
+#include "jigraphicstextitem.h"
+#include "jigraphicsview.h"
 #include <QJsonDocument>
 UTEST(Serialization,pixmapitem)
 {
     QImage img(100,100,QImage::Format_ARGB32);
     img.fill(Qt::red);
     QPixmap pixmap = QPixmap::fromImage(img);
-    SLImageProvider provider;
+    JIImageProvider provider;
     const auto pixId = provider.addPixmap(pixmap);
-    SLGraphicsPixmapItem item(&provider);
+    JIGraphicsPixmapItem item(&provider);
     item.setRect(QRectF(50,50,100,100));
     item.setPixmapId(pixId);
     item.setRotation(-62.223489647253174);
@@ -21,20 +21,20 @@ UTEST(Serialization,pixmapitem)
 
     const QJsonObject obj1 = item.asJson();
     ASSERT_FALSE(obj1.isEmpty());
-    const int type = obj1[SLGraphicsItem::JK_TYPE].toInt();
+    const int type = obj1[JIGraphicsItem::JK_TYPE].toInt();
     ASSERT_EQ(
-        SLGraphicsPixmapItem::Type, //expected
+        JIGraphicsPixmapItem::Type, //expected
         type
         );
 
     QJsonDocument doc(obj1);
     qDebug().noquote()<<doc.toJson();
 
-    SLGraphicsPixmapItem item2(&provider);
+    JIGraphicsPixmapItem item2(&provider);
     ASSERT_TRUE(item2.fromJson(obj1));
     ASSERT_EQ(
-        SL::normalizedAngle(item2.rotation()),
-        SL::normalizedAngle(item.rotation())
+        JI::normalizedAngle(item2.rotation()),
+        JI::normalizedAngle(item.rotation())
         );
     ASSERT_TRUE(item2.sortOrder()==item.sortOrder());
     ASSERT_TRUE(item2.rect()==item.rect());
@@ -43,7 +43,7 @@ UTEST(Serialization,pixmapitem)
 
 UTEST(Serialization,textparams)
 {
-    SL::TextParams params;
+    JI::TextParams params;
     params.font.setFamily("Arial");
     params.font.setPointSize(12);
     params.font.setBold(true);
@@ -58,7 +58,7 @@ UTEST(Serialization,textparams)
     ASSERT_FALSE(obj1.isEmpty());
     QJsonDocument doc(obj1);
     qDebug().noquote()<<doc.toJson();
-    SL::TextParams params2;
+    JI::TextParams params2;
     ASSERT_TRUE(params2.fromJson(obj1));
     ASSERT_TRUE(params==params2);
     QJsonDocument doc2(params.asJson());
@@ -71,9 +71,9 @@ UTEST(Serialization,textparams)
 
 UTEST(Serialization,textitem)
 {
-    SLGraphicsTextItem item;
+    JIGraphicsTextItem item;
     item.setRect(QRectF(150,150,100,100));
-    SL::TextParams params;
+    JI::TextParams params;
     params.font.setFamily("Arial");
     params.font.setPointSize(12);
     params.font.setBold(true);
@@ -89,16 +89,16 @@ UTEST(Serialization,textitem)
 
     const QJsonObject obj1 = item.asJson();
     ASSERT_FALSE(obj1.isEmpty());
-    const int type = obj1[SLGraphicsItem::JK_TYPE].toInt();
+    const int type = obj1[JIGraphicsItem::JK_TYPE].toInt();
     ASSERT_EQ(
-        SLGraphicsTextItem::Type, //expected
+        JIGraphicsTextItem::Type, //expected
         type
     );
 
-    SLGraphicsTextItem item2;
+    JIGraphicsTextItem item2;
     ASSERT_TRUE(item2.fromJson(obj1));
-    ASSERT_EQ(SL::normalizedAngle(item2.rotation()),
-              SL::normalizedAngle(item.rotation()));
+    ASSERT_EQ(JI::normalizedAngle(item2.rotation()),
+              JI::normalizedAngle(item.rotation()));
     ASSERT_TRUE(item2.sortOrder()==item.sortOrder());
     ASSERT_TRUE(item2.rect().toRect()==item.rect().toRect());
     ASSERT_TRUE(item2.textParams()==item.textParams());
@@ -107,10 +107,10 @@ UTEST(Serialization,textitem)
 UTEST(Serialization,imageprovider)
 {
     const QStringList testImages({
-        ":/creativity.png",
+        ":/app-icon.png",
         ":/rotate-icon.png"
     });
-    SLImageProvider provider;
+    JIImageProvider provider;
     for (const QString& imgPath : testImages)
     {
         QPixmap pix(imgPath);
@@ -120,10 +120,10 @@ UTEST(Serialization,imageprovider)
     }
     ASSERT_GT(provider.count(),1);
     const QJsonObject obj1 = provider.asJson();
-    ASSERT_TRUE(obj1.contains(SLImageProvider::JK_IMAGES));
-    ASSERT_TRUE(obj1[SLImageProvider::JK_IMAGES].toObject().count()==provider.count());
+    ASSERT_TRUE(obj1.contains(JIImageProvider::JK_IMAGES));
+    ASSERT_TRUE(obj1[JIImageProvider::JK_IMAGES].toObject().count()==provider.count());
 
-    SLImageProvider provider2;
+    JIImageProvider provider2;
     ASSERT_TRUE(provider2.fromJson(obj1));
     ASSERT_TRUE(provider2.pixmapIds()==provider.pixmapIds());
     // check individual pixmaps
@@ -145,17 +145,17 @@ UTEST(Serialization,imageprovider)
 UTEST(Serialization,graphicsview)
 {
     const QStringList testImages({
-        ":/creativity.png",
+        ":/app-icon.png",
         ":/rotate-icon.png"
     });
-    SLGraphicsView view;
+    JIGraphicsView view;
     for (const QString& imgPath : testImages)
     {
         QPixmap pix(imgPath);
         ASSERT_FALSE(pix.isNull());
         view.addPixmapItem(pix);
     }
-    SL::TextParams params;
+    JI::TextParams params;
     params.font.setFamily("Arial");
     params.font.setPointSize(12);
     params.font.setBold(true);
@@ -164,16 +164,16 @@ UTEST(Serialization,graphicsview)
     view.setOrientation(Qt::Horizontal);
     view.setPaperSize(QSize(210,297)*2);
 
-    const QJsonObject obj = view.asJson(SLGraphicsView::jfItemsAndImages);
+    const QJsonObject obj = view.asJson(JIGraphicsView::jfItemsAndImages);
     ASSERT_FALSE(obj.isEmpty());
-    ASSERT_TRUE(obj.contains(SLGraphicsView::JK_ITEMS));
-    ASSERT_TRUE(obj.contains(SLGraphicsView::JK_PAPER_WIDTH));
-    ASSERT_TRUE(obj.contains(SLGraphicsView::JK_PAPER_HEIGHT));
-    ASSERT_TRUE(obj.contains(SLGraphicsView::JK_ORIENTATION));
-    ASSERT_TRUE(obj.contains(SLGraphicsView::JK_PROVIDER));
+    ASSERT_TRUE(obj.contains(JIGraphicsView::JK_ITEMS));
+    ASSERT_TRUE(obj.contains(JIGraphicsView::JK_PAPER_WIDTH));
+    ASSERT_TRUE(obj.contains(JIGraphicsView::JK_PAPER_HEIGHT));
+    ASSERT_TRUE(obj.contains(JIGraphicsView::JK_ORIENTATION));
+    ASSERT_TRUE(obj.contains(JIGraphicsView::JK_PROVIDER));
 
-    SLGraphicsView view2;
-    ASSERT_TRUE(view2.fromJson(obj, SLGraphicsView::jfItemsAndImages));
+    JIGraphicsView view2;
+    ASSERT_TRUE(view2.fromJson(obj, JIGraphicsView::jfItemsAndImages));
     ASSERT_TRUE(view2.paperSize()==view.paperSize());
     ASSERT_TRUE(view2.orientation()==view.orientation());
     ASSERT_EQ(view2.itemsCount(),view.itemsCount());

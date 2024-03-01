@@ -3,15 +3,15 @@
 #include <QHash>
 #include <QPixmap>
 #include <QSet>
-#include "slcommon.h"
-class SLImageProvider
+#include "jicommon.h"
+class JIImageProvider
 {
 public:
     typedef QString PixmapId;
     JSONKEY JK_IMAGES = "images";
 
-    SLImageProvider();
-    ~SLImageProvider();
+    JIImageProvider();
+    ~JIImageProvider();
 
     PixmapId addPixmap(const QPixmap& pixmap);
     const QPixmap *pixmap(const PixmapId& id, const bool transparentBackground = false) const;

@@ -2,12 +2,12 @@
 #pragma GCC diagnostic ignored "-Wreturn-type"
 #include "utest.h"
 #pragma GCC diagnostic pop
-#include "slundoredo.h"
+#include "jiundoredo.h"
 
 UTEST(UndoRedo,basics)
 {
     const int m_initialHead = 123456;
-    SLUndoRedo<int> ur(m_initialHead);
+    JIUndoRedo<int> ur(m_initialHead);
     // verify initial state
     ASSERT_EQ(1,ur.stackSize());
     ASSERT_EQ(0,ur.stackPosition());

@@ -1,18 +1,18 @@
-#ifndef SLMAINWINDOW_H
-#define SLMAINWINDOW_H
+#ifndef JIMAINWINDOW_H
+#define JIMAINWINDOW_H
 
 #include <QMainWindow>
 #include <QJsonObject>
-#include "slundoredo.h"
+#include "jiundoredo.h"
 #include <QSettings>
 #include <QTranslator>
 #include "jiaboutdlg.h"
 #include "jipapersizedlg.h"
 QT_BEGIN_NAMESPACE
-namespace Ui { class SLMainWindow; }
+namespace Ui { class JIMainWindow; }
 QT_END_NAMESPACE
 
-class SLMainWindow : public QMainWindow
+class JIMainWindow : public QMainWindow
 {
     Q_OBJECT
 
@@ -39,8 +39,8 @@ class SLMainWindow : public QMainWindow
 
 public:
     typedef QHash<QString, QSharedPointer<QTranslator> > Translators;
-    SLMainWindow(QSettings* settings, const Translators& translators, QWidget *parent = nullptr);
-    ~SLMainWindow();
+    JIMainWindow(QSettings* settings, const Translators& translators, QWidget *parent = nullptr);
+    ~JIMainWindow();
 
     void loadFile(const QString& fileName);
     void loadFromByteArray(const QByteArray& data, const QString &filename);
@@ -66,11 +66,11 @@ private:
      * @return
      */
     void ensureAllSaved(std::function<void()> onProceed);
-    Ui::SLMainWindow *ui;
+    Ui::JIMainWindow *ui;
     QSettings* m_settings;
     Translators m_translators;
     QMenu* m_languageMenu;
-    SLUndoRedo<QJsonObject> m_undoRedo;
+    JIUndoRedo<QJsonObject> m_undoRedo;
     bool    m_restoring = false;
     QHash<Action, QAction*> m_actions;
     QString m_fileName;
@@ -100,4 +100,4 @@ private slots:
     void    exportAsImage();
 
 };
-#endif // SLMAINWINDOW_H
+#endif // JIMAINWINDOW_H

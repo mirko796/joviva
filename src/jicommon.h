@@ -1,5 +1,5 @@
-#ifndef SLCOMMON_H
-#define SLCOMMON_H
+#ifndef JICOMMON_H
+#define JICOMMON_H
 #include <QString>
 #include <QFont>
 #include <QColor>
@@ -7,7 +7,7 @@
 #include <QMessageBox>
 
 #define JSONKEY static constexpr char const* const
-namespace SL
+namespace JI
 {
 constexpr int DefaultFontSize = 128;
 constexpr char DefaultExtension[] = "ji";
@@ -108,7 +108,7 @@ public:
     }
     void setSizeInPixels(const QSize &newSizeInPixels)
     {
-        m_sizeInPixels = SL::normalizeSize(newSizeInPixels);
+        m_sizeInPixels = JI::normalizeSize(newSizeInPixels);
     }
     Qt::Orientation orientation() const
     {
@@ -140,4 +140,4 @@ void showSaveFileDialog(QWidget *parent,
                         std::function<void(const QString& filename)> onSaved = nullptr);
 
 }
-#endif // SLCOMMON_H
+#endif // JICOMMON_H

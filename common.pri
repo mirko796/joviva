@@ -17,38 +17,37 @@ INCLUDEPATH *= $$SRC_DIR
 SOURCES *= \
     $$PWD/src/jipapersizedlg.cpp \
     $$SRC_DIR/jiaboutdlg.cpp \
-    $$SRC_DIR/slundoredo.cpp \
-    $$SRC_DIR/slcommon.cpp \
-    $$SRC_DIR/slgraphicsitem.cpp \
-    $$SRC_DIR/slgraphicspixmapitem.cpp \
-    $$SRC_DIR/slgraphicsscene.cpp \
-    $$SRC_DIR/slgraphicstextitem.cpp \
-    $$SRC_DIR/slgraphicsview.cpp \
-    $$SRC_DIR/slimageprovider.cpp \
-    $$SRC_DIR/slmainwindow.cpp \
-    $$SRC_DIR/slprintpreview.cpp \
-    $$SRC_DIR/slsidebarwidget.cpp
+    $$SRC_DIR/jicommon.cpp \
+    $$SRC_DIR/jigraphicsitem.cpp \
+    $$SRC_DIR/jigraphicspixmapitem.cpp \
+    $$SRC_DIR/jigraphicsscene.cpp \
+    $$SRC_DIR/jigraphicstextitem.cpp \
+    $$SRC_DIR/jigraphicsview.cpp \
+    $$SRC_DIR/jiimageprovider.cpp \
+    $$SRC_DIR/jimainwindow.cpp \
+    $$SRC_DIR/jiprintpreview.cpp \
+    $$SRC_DIR/jisidebarwidget.cpp
 
 HEADERS *= \
     $$PWD/src/jipapersizedlg.h \
     $$SRC_DIR/jiaboutdlg.h \
-    $$SRC_DIR/slundoredo.h \
-    $$SRC_DIR/slcommon.h \
-    $$SRC_DIR/slgraphicsitem.h \
-    $$SRC_DIR/slgraphicspixmapitem.h \
-    $$SRC_DIR/slgraphicsscene.h \
-    $$SRC_DIR/slgraphicstextitem.h \
-    $$SRC_DIR/slgraphicsview.h \
-    $$SRC_DIR/slimageprovider.h \
-    $$SRC_DIR/slmainwindow.h \
-    $$SRC_DIR/slprintpreview.h \
-    $$SRC_DIR/slsidebarwidget.h
+    $$SRC_DIR/jiundoredo.h \
+    $$SRC_DIR/jicommon.h \
+    $$SRC_DIR/jigraphicsitem.h \
+    $$SRC_DIR/jigraphicspixmapitem.h \
+    $$SRC_DIR/jigraphicsscene.h \
+    $$SRC_DIR/jigraphicstextitem.h \
+    $$SRC_DIR/jigraphicsview.h \
+    $$SRC_DIR/jiimageprovider.h \
+    $$SRC_DIR/jimainwindow.h \
+    $$SRC_DIR/jiprintpreview.h \
+    $$SRC_DIR/jisidebarwidget.h
 
 FORMS *= \
     $$PWD/src/jipapersizedlg.ui \
     $$SRC_DIR/jiaboutdlg.ui \
-    $$SRC_DIR/slmainwindow.ui \
-    $$SRC_DIR/slsidebarwidget.ui
+    $$SRC_DIR/jimainwindow.ui \
+    $$SRC_DIR/jisidebarwidget.ui
 
 RESOURCES *= \
     $$PWD/rsrc/images.qrc \

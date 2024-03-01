@@ -1,12 +1,12 @@
-#include "slmainwindow.h"
-#include "ui_slmainwindow.h"
+#include "jimainwindow.h"
+#include "ui_jimainwindow.h"
 #include <QUrl>
 #include <QDesktopServices>
 #include <QFileDialog>
 #include <QMessageBox>
 #include <QClipboard>
 #include <QMimeData>
-#include "slprintpreview.h"
+#include "jiprintpreview.h"
 #include <QJsonDocument>
 #include <QStandardPaths>
 #include <QTimer>
@@ -16,7 +16,7 @@
 #include <emscripten.h>
 #include <emscripten/bind.h>
 const char* byteArray = "Hello, World!";
-static SLMainWindow* g_mainWindow = nullptr;
+static JIMainWindow* g_mainWindow = nullptr;
 
 void pasteTextWasm(const std::string& text) {
     if (g_mainWindow) {
@@ -41,9 +41,9 @@ EMSCRIPTEN_BINDINGS(mylibrary) {
     emscripten::function("pasteImageWasm", &pasteImageWasm);
 }
 #endif
-SLMainWindow::SLMainWindow(QSettings *settings, const Translators& translators, QWidget *parent)
+JIMainWindow::JIMainWindow(QSettings *settings, const Translators& translators, QWidget *parent)
     : QMainWindow(parent)
-    , ui(new Ui::SLMainWindow)
+    , ui(new Ui::JIMainWindow)
     , m_settings(settings)
     , m_translators(translators)
     , m_undoRedo(QJsonObject())
@@ -52,17 +52,17 @@ SLMainWindow::SLMainWindow(QSettings *settings, const Translators& translators, 
     g_mainWindow = this;
 #endif
     /* let's install translator before any ui actions */
-    const QString lang = m_settings->value(SL::SettingsKeyLanguage, "").toString();
+    const QString lang = m_settings->value(JI::SettingsKeyLanguage, "").toString();
     if (m_translators.contains(lang)) {
         qApp->installTranslator(m_translators.value(lang).data());
     }
     ui->setupUi(this);
     initActions();
     initMainMenu();
-    connect(ui->graphicsView, &SLGraphicsView::itemsChanged,
-            this, &SLMainWindow::onItemsChanged);
-    connect(ui->graphicsView, &SLGraphicsView::orientationChanged,
-            this, &SLMainWindow::updateActions);
+    connect(ui->graphicsView, &JIGraphicsView::itemsChanged,
+            this, &JIMainWindow::onItemsChanged);
+    connect(ui->graphicsView, &JIGraphicsView::orientationChanged,
+            this, &JIMainWindow::updateActions);
     ui->mw_sidebar->setGraphicsView(ui->graphicsView);
     ui->splitter->setSizes({100000,20});
 
@@ -73,7 +73,7 @@ SLMainWindow::SLMainWindow(QSettings *settings, const Translators& translators, 
     startNewDocument();
 }
 
-SLMainWindow::~SLMainWindow()
+JIMainWindow::~JIMainWindow()
 {
 #ifdef Q_OS_WASM
     g_mainWindow = nullptr;
@@ -81,12 +81,12 @@ SLMainWindow::~SLMainWindow()
     delete ui;
 }
 
-void SLMainWindow::loadFromSettings()
+void JIMainWindow::loadFromSettings()
 {
     m_actions[actShowButtonText]->setChecked(
-        m_settings->value(SL::SettingsKeyShowButtonTexts, false).toBool()
+        m_settings->value(JI::SettingsKeyShowButtonTexts, false).toBool()
         );
-    const QString lang = m_settings->value(SL::SettingsKeyLanguage, "").toString();
+    const QString lang = m_settings->value(JI::SettingsKeyLanguage, "").toString();
     foreach(QAction* action, m_languageMenu->actions()) {
         const bool checked = action->text()==lang;
 
@@ -97,7 +97,7 @@ void SLMainWindow::loadFromSettings()
     }
 }
 
-void SLMainWindow::updateWindowTitle()
+void JIMainWindow::updateWindowTitle()
 {
     QString title = QString("JovIva %1 - Simple Image Editor").arg(APP_VERSION);
     if (m_fileName.size()) {
@@ -108,7 +108,7 @@ void SLMainWindow::updateWindowTitle()
     setWindowTitle(title);
 }
 
-void SLMainWindow::pasteTextWasm(const QString &text)
+void JIMainWindow::pasteTextWasm(const QString &text)
 {
     auto focusedPlainTextControl = qobject_cast<QPlainTextEdit*>(qApp->focusWidget());
     if (focusedPlainTextControl) {
@@ -118,7 +118,7 @@ void SLMainWindow::pasteTextWasm(const QString &text)
     }
 }
 
-void SLMainWindow::pasteImageWasm(const QByteArray &data)
+void JIMainWindow::pasteImageWasm(const QByteArray &data)
 {
     QPixmap pixmap;
     pixmap.loadFromData(data);
@@ -131,13 +131,13 @@ void SLMainWindow::pasteImageWasm(const QByteArray &data)
 
 }
 
-void SLMainWindow::showEvent(QShowEvent *event)
+void JIMainWindow::showEvent(QShowEvent *event)
 {
     QMainWindow::showEvent(event);
-    QTimer::singleShot(100, ui->graphicsView, &SLGraphicsView::fitToView);
+    QTimer::singleShot(100, ui->graphicsView, &JIGraphicsView::fitToView);
 }
 
-void SLMainWindow::closeEvent(QCloseEvent *event)
+void JIMainWindow::closeEvent(QCloseEvent *event)
 {
     if (isModified()) {
         const auto btn =
@@ -157,29 +157,29 @@ void SLMainWindow::closeEvent(QCloseEvent *event)
     }
 }
 
-void SLMainWindow::setFileName(const QString &fileName)
+void JIMainWindow::setFileName(const QString &fileName)
 {
     m_fileName = fileName;
     updateWindowTitle();
     updateActions();
 }
 
-bool SLMainWindow::isModified() const
+bool JIMainWindow::isModified() const
 {
     if (ui->graphicsView->itemsCount()==0) {
         return false;
     }
-    return m_savedContent!=ui->graphicsView->asJson(SLGraphicsView::jfItemsOnly);
+    return m_savedContent!=ui->graphicsView->asJson(JIGraphicsView::jfItemsOnly);
 }
 
-void SLMainWindow::ensureAllSaved(std::function<void()> onProceed)
+void JIMainWindow::ensureAllSaved(std::function<void()> onProceed)
 {
     if (isModified()) {
         auto onConfirmed = [this, onProceed](){
             saveToFile();
             onProceed();
         };
-        SL::showQuestionAsync(
+        JI::showQuestionAsync(
             tr("Save Changes"), tr("Do you want to save changes?"),
             {
                 { QMessageBox::Yes, onConfirmed },
@@ -191,29 +191,29 @@ void SLMainWindow::ensureAllSaved(std::function<void()> onProceed)
     }
 }
 
-void SLMainWindow::print()
+void JIMainWindow::print()
 {
 #ifdef Q_OS_WASM
     emscripten_async_run_script("printImage();",100);
 #else
     ui->graphicsView->clearSelection();
-    SLPrintPreview preview(ui->graphicsView);
+    JIPrintPreview preview(ui->graphicsView);
     preview.printDirect(ui->graphicsView->documentSize());
 #endif
 }
 
-void SLMainWindow::printPreview()
+void JIMainWindow::printPreview()
 {
 #ifdef Q_OS_WASM
     emscripten_async_run_script("openImageInBrowser();",100);
 #else
     ui->graphicsView->clearSelection();
-    SLPrintPreview preview(ui->graphicsView);
+    JIPrintPreview preview(ui->graphicsView);
     preview.printPreview(ui->graphicsView->documentSize());
 #endif
 }
 
-void SLMainWindow::pasteContent()
+void JIMainWindow::pasteContent()
 {
 #ifdef Q_OS_WASM
     emscripten_async_run_script("getClipboardData();",1000);
@@ -246,7 +246,7 @@ void SLMainWindow::pasteContent()
 #endif
 }
 
-void SLMainWindow::addImageFromLocalFile()
+void JIMainWindow::addImageFromLocalFile()
 {
     // do the same using getOpenFileContent
     auto fileContentReady = [this](const QString &fileName, const QByteArray &fileContent)
@@ -266,18 +266,18 @@ void SLMainWindow::addImageFromLocalFile()
             }
         }
     };
-    SL::showOpenFileDialog(this, tr("Open Image File"), QStandardPaths::writableLocation(QStandardPaths::DesktopLocation),
+    JI::showOpenFileDialog(this, tr("Open Image File"), QStandardPaths::writableLocation(QStandardPaths::DesktopLocation),
              "Image Files (*.jpg *.jpeg *.png *.tiff *.bmp)", fileContentReady);
 }
 
-void SLMainWindow::startNewDocument()
+void JIMainWindow::startNewDocument()
 {
     auto onConfirmed = [this](){
         ui->graphicsView->removeAllItems();
         setFileName("");
         m_savedContent = QJsonObject();
         m_undoRedo.reset(
-            ui->graphicsView->asJson(SLGraphicsView::jfItemsOnly)
+            ui->graphicsView->asJson(JIGraphicsView::jfItemsOnly)
             );
         updateActions();
         ui->graphicsView->fitToView();
@@ -285,7 +285,7 @@ void SLMainWindow::startNewDocument()
     ensureAllSaved( onConfirmed );
 }
 
-void SLMainWindow::saveFile(const QString& filename)
+void JIMainWindow::saveFile(const QString& filename)
 {
     QFile file(filename);
     if (!file.open(QIODevice::WriteOnly)) {
@@ -295,18 +295,18 @@ void SLMainWindow::saveFile(const QString& filename)
     const QByteArray ba( saveToByteArray() );
     file.write(ba);
     file.close();
-    m_savedContent=ui->graphicsView->asJson(SLGraphicsView::jfItemsOnly);
+    m_savedContent=ui->graphicsView->asJson(JIGraphicsView::jfItemsOnly);
     setFileName(filename);
 }
 
-QByteArray SLMainWindow::saveToByteArray() const
+QByteArray JIMainWindow::saveToByteArray() const
 {
-    QJsonObject obj = ui->graphicsView->asJson(SLGraphicsView::jfItemsAndImages);
+    QJsonObject obj = ui->graphicsView->asJson(JIGraphicsView::jfItemsAndImages);
     QJsonDocument doc(obj);
     const QString json = doc.toJson(QJsonDocument::Indented);
     return json.toUtf8();
 }
-void SLMainWindow::saveToFile()
+void JIMainWindow::saveToFile()
 {
     if (m_fileName.isEmpty()) {
         saveAsToFile();
@@ -315,25 +315,25 @@ void SLMainWindow::saveToFile()
     }
 }
 
-void SLMainWindow::saveAsToFile()
+void JIMainWindow::saveAsToFile()
 {
     const QString desktopPath = QStandardPaths::writableLocation(QStandardPaths::DesktopLocation);
     const QByteArray data( saveToByteArray() );
     auto onSaved = [this](const QString &filename) {
-        m_savedContent = ui->graphicsView->asJson(SLGraphicsView::jfItemsOnly);
+        m_savedContent = ui->graphicsView->asJson(JIGraphicsView::jfItemsOnly);
         setFileName(filename);
     };
-    SL::showSaveFileDialog(
+    JI::showSaveFileDialog(
         this, tr("Save File"),
         desktopPath,
-        SL::defaultFileFilter(),
+        JI::defaultFileFilter(),
         m_fileName.isEmpty() ? tr("Untitled.ji") : QFileInfo(m_fileName).fileName(),
-        SL::DefaultExtension,
+        JI::DefaultExtension,
         data,
         onSaved);
 }
 
-void SLMainWindow::loadFromFile()
+void JIMainWindow::loadFromFile()
 {
     auto onProceed = [this]() {
         auto fileContentReady = [this](const QString &filename, const QByteArray &fileContent) {
@@ -342,16 +342,16 @@ void SLMainWindow::loadFromFile()
         };
 
         const QString desktopPath = QStandardPaths::writableLocation(QStandardPaths::DesktopLocation);
-        SL::showOpenFileDialog(
+        JI::showOpenFileDialog(
             this, tr("Open File"),
             desktopPath,
-            SL::defaultFileFilter(),
+            JI::defaultFileFilter(),
             fileContentReady);
     };
     ensureAllSaved(onProceed);
 }
 
-void SLMainWindow::onItemsChanged()
+void JIMainWindow::onItemsChanged()
 {
     if (m_restoring) {
         qDebug()<<"Restoring is true, ignoring items changed signal...";
@@ -359,7 +359,7 @@ void SLMainWindow::onItemsChanged()
     }
     auto view = ui->graphicsView;
     qDebug()<<"Main window items changed...";
-    auto data = view->asJson(SLGraphicsView::jfItemsOnly);
+    auto data = view->asJson(JIGraphicsView::jfItemsOnly);
     if (m_undoRedo.head()==data) {
         qDebug()<<"This state is already in head of undo redo stack";
     } else {
@@ -372,7 +372,7 @@ void SLMainWindow::onItemsChanged()
     ui->graphicsView->fitToView();
 }
 
-void SLMainWindow::updateActions()
+void JIMainWindow::updateActions()
 {
     m_actions[actUndo]->setEnabled(m_undoRedo.canUndo());
     m_actions[actRedo]->setEnabled(m_undoRedo.canRedo());
@@ -387,7 +387,7 @@ void SLMainWindow::updateActions()
     m_actions[actSaveAs]->setEnabled(m_fileName.isEmpty()==false);
 }
 
-void SLMainWindow::undo()
+void JIMainWindow::undo()
 {
     if (m_undoRedo.undo()) {
         m_restoring = true;
@@ -395,7 +395,7 @@ void SLMainWindow::undo()
         auto data = m_undoRedo.head();
         // dump data to console
         qDebug()<<"UNDO DATA:"<<QJsonDocument(data).toJson(QJsonDocument::Indented);
-        view->fromJson(data, SLGraphicsView::jfItemsOnly);
+        view->fromJson(data, JIGraphicsView::jfItemsOnly);
         m_restoring = false;
     }
     updateActions();
@@ -403,14 +403,14 @@ void SLMainWindow::undo()
     ui->graphicsView->fitToView();
 }
 
-void SLMainWindow::redo()
+void JIMainWindow::redo()
 {
     if (m_undoRedo.redo()) {
         // TODO: use scope quard for this
         m_restoring = true;
         auto view = ui->graphicsView;
         auto data = m_undoRedo.head();
-        view->fromJson(data, SLGraphicsView::jfItemsOnly);
+        view->fromJson(data, JIGraphicsView::jfItemsOnly);
         m_restoring = false;
     }
     updateActions();
@@ -418,7 +418,7 @@ void SLMainWindow::redo()
     ui->graphicsView->fitToView();
 }
 
-void SLMainWindow::updateButtonsTextVisibility()
+void JIMainWindow::updateButtonsTextVisibility()
 {
     const auto buttons = findChildren<QToolButton*>();
     const bool textVisible = m_actions[actShowButtonText]->isChecked();
@@ -426,10 +426,10 @@ void SLMainWindow::updateButtonsTextVisibility()
         button->setIconSize(QSize(24,24));
         button->setToolButtonStyle(textVisible ? Qt::ToolButtonTextUnderIcon : Qt::ToolButtonIconOnly);
     }
-    m_settings->setValue(SL::SettingsKeyShowButtonTexts, textVisible);
+    m_settings->setValue(JI::SettingsKeyShowButtonTexts, textVisible);
 }
 
-void SLMainWindow::onLanguageActionTriggered()
+void JIMainWindow::onLanguageActionTriggered()
 {
     auto act = qobject_cast<QAction*>(sender());
     if (act==nullptr) {
@@ -448,25 +448,25 @@ void SLMainWindow::onLanguageActionTriggered()
         QSignalBlocker _b(action);
         action->setChecked(action==act);
     }
-    m_settings->setValue(SL::SettingsKeyLanguage,newLang);
+    m_settings->setValue(JI::SettingsKeyLanguage,newLang);
     ui->retranslateUi(this);
 }
 
-void SLMainWindow::about()
+void JIMainWindow::about()
 {
     m_aboutDlg.setModal(true);
     m_aboutDlg.show();
 }
 
-void SLMainWindow::setPaperSize()
+void JIMainWindow::setPaperSize()
 {
     m_paperSizeDlg.setModal(true);
     m_paperSizeDlg.setDocumentSize(ui->graphicsView->documentSize());
     m_paperSizeDlg.show();
-    connect(&m_paperSizeDlg, &JIPaperSizeDlg::finished, this, &SLMainWindow::onPaperSizeDialogFinished, Qt::UniqueConnection);
+    connect(&m_paperSizeDlg, &JIPaperSizeDlg::finished, this, &JIMainWindow::onPaperSizeDialogFinished, Qt::UniqueConnection);
 }
 
-void SLMainWindow::onPaperSizeDialogFinished(int result)
+void JIMainWindow::onPaperSizeDialogFinished(int result)
 {
     if (result!=QDialog::Accepted) {
         return;
@@ -478,7 +478,7 @@ void SLMainWindow::onPaperSizeDialogFinished(int result)
     ui->graphicsView->setDocumentSize( dlg->getDocumentSize() );
 }
 
-QByteArray SLMainWindow::exportAsImageToByteArray()
+QByteArray JIMainWindow::exportAsImageToByteArray()
 {
     ui->graphicsView->clearSelection();
     //save content of view to image
@@ -495,30 +495,30 @@ QByteArray SLMainWindow::exportAsImageToByteArray()
     return bytes;
 }
 
-void SLMainWindow::exportAsImage()
+void JIMainWindow::exportAsImage()
 {
     const QByteArray bytes( exportAsImageToByteArray() );
 
     const QString desktopPath = QStandardPaths::writableLocation(QStandardPaths::DesktopLocation);
-    SL::showSaveFileDialog(
+    JI::showSaveFileDialog(
         this, tr("Export As Image"),
         desktopPath,
         "PNG Files (*.png)",
         "Untitled.png","png",bytes);
 }
 
-void SLMainWindow::addText(const QString& text)
+void JIMainWindow::addText(const QString& text)
 {
-    SL::TextParams params;
+    JI::TextParams params;
     params.text = text.isEmpty() ? tr("Text Item") : text;
-    params.font = QFont("Arial", SL::DefaultFontSize);
+    params.font = QFont("Arial", JI::DefaultFontSize);
     params.color = Qt::black;
     params.alignment = Qt::AlignCenter;
     ui->graphicsView->addTextItem(params);
 }
 
 
-void SLMainWindow::loadFile(const QString &filename)
+void JIMainWindow::loadFile(const QString &filename)
 {
     qDebug()<<"Loading file:"<<filename;
     QFile file(filename);
@@ -532,7 +532,7 @@ void SLMainWindow::loadFile(const QString &filename)
     loadFromByteArray(data, filename);
 }
 
-void SLMainWindow::loadFromByteArray(const QByteArray &data, const QString& filename)
+void JIMainWindow::loadFromByteArray(const QByteArray &data, const QString& filename)
 {
     QJsonParseError error;
     const QJsonDocument doc = QJsonDocument::fromJson(data, &error);
@@ -540,16 +540,16 @@ void SLMainWindow::loadFromByteArray(const QByteArray &data, const QString& file
         QMessageBox::warning(this, qApp->applicationName(), tr("Failed to parse json file %1: %2").arg(filename).arg(error.errorString()));
         return;
     }
-    if (!ui->graphicsView->fromJson(doc.object(), SLGraphicsView::jfItemsAndImages)) {
+    if (!ui->graphicsView->fromJson(doc.object(), JIGraphicsView::jfItemsAndImages)) {
         QMessageBox::warning(this, qApp->applicationName(), tr("Failed to load file %1").arg(filename));
         return;
     }
-    m_savedContent = ui->graphicsView->asJson(SLGraphicsView::jfItemsOnly);
+    m_savedContent = ui->graphicsView->asJson(JIGraphicsView::jfItemsOnly);
     m_undoRedo.reset(m_savedContent);
     setFileName(filename);
 }
 
-void SLMainWindow::initActions()
+void JIMainWindow::initActions()
 {
     auto createAction = [this](Action act, const QString &text, const QKeySequence &shortcut=QKeySequence(), const QString& icon=QString(), QToolButton* btn=nullptr) {
         auto action = new QAction(text, this);
@@ -688,35 +688,35 @@ void SLMainWindow::initActions()
         ":/add-image-icon.png",
         ui->btn_exportImage);
 
-    connect(m_actions[actNew], &QAction::triggered, this, &SLMainWindow::startNewDocument);
-    connect(m_actions[actOpen], &QAction::triggered, this, &SLMainWindow::loadFromFile);
-    connect(m_actions[actSave], &QAction::triggered, this, &SLMainWindow::saveToFile);
-    connect(m_actions[actSaveAs], &QAction::triggered, this, &SLMainWindow::saveAsToFile);
-    connect(m_actions[actPaste], &QAction::triggered, this, &SLMainWindow::pasteContent);
-    connect(m_actions[actAddImage], &QAction::triggered, this, &SLMainWindow::addImageFromLocalFile);
+    connect(m_actions[actNew], &QAction::triggered, this, &JIMainWindow::startNewDocument);
+    connect(m_actions[actOpen], &QAction::triggered, this, &JIMainWindow::loadFromFile);
+    connect(m_actions[actSave], &QAction::triggered, this, &JIMainWindow::saveToFile);
+    connect(m_actions[actSaveAs], &QAction::triggered, this, &JIMainWindow::saveAsToFile);
+    connect(m_actions[actPaste], &QAction::triggered, this, &JIMainWindow::pasteContent);
+    connect(m_actions[actAddImage], &QAction::triggered, this, &JIMainWindow::addImageFromLocalFile);
     connect(m_actions[actAddText], &QAction::triggered, this, [this](){
         addText();
     });
-    connect(m_actions[actUndo], &QAction::triggered, this, &SLMainWindow::undo);
-    connect(m_actions[actRedo], &QAction::triggered, this, &SLMainWindow::redo);
+    connect(m_actions[actUndo], &QAction::triggered, this, &JIMainWindow::undo);
+    connect(m_actions[actRedo], &QAction::triggered, this, &JIMainWindow::redo);
     connect(m_actions[actPortrait], &QAction::triggered, [this](){
         ui->graphicsView->setOrientation(Qt::Vertical);
     });
     connect(m_actions[actLandscape], &QAction::triggered, [this](){
         ui->graphicsView->setOrientation(Qt::Horizontal);
     });
-    connect(m_actions[actPrint], &QAction::triggered, this, &SLMainWindow::print);
-    connect(m_actions[actPrintPreview], &QAction::triggered, this, &SLMainWindow::printPreview);
-    connect(m_actions[actShowButtonText], &QAction::triggered, this, &SLMainWindow::updateButtonsTextVisibility);
-    connect(m_actions[actAbout], &QAction::triggered, this, &SLMainWindow::about);
-    connect(m_actions[actPaperSize], &QAction::triggered, this, &SLMainWindow::setPaperSize);
-    connect(m_actions[actExportImage], &QAction::triggered, this, &SLMainWindow::exportAsImage);
+    connect(m_actions[actPrint], &QAction::triggered, this, &JIMainWindow::print);
+    connect(m_actions[actPrintPreview], &QAction::triggered, this, &JIMainWindow::printPreview);
+    connect(m_actions[actShowButtonText], &QAction::triggered, this, &JIMainWindow::updateButtonsTextVisibility);
+    connect(m_actions[actAbout], &QAction::triggered, this, &JIMainWindow::about);
+    connect(m_actions[actPaperSize], &QAction::triggered, this, &JIMainWindow::setPaperSize);
+    connect(m_actions[actExportImage], &QAction::triggered, this, &JIMainWindow::exportAsImage);
     // add all actions to main window
     addActions(m_actions.values());
 
 }
 
-void SLMainWindow::initMainMenu()
+void JIMainWindow::initMainMenu()
 {
     QMenu* fileMenu = menuBar()->addMenu(tr("&File"));
     fileMenu->addAction(m_actions[actNew]);
@@ -748,7 +748,7 @@ void SLMainWindow::initMainMenu()
         auto action = new QAction(lang, this);
         action->setCheckable(true);
         m_languageMenu->addAction(action);
-        connect( action, &QAction::triggered, this, &SLMainWindow::onLanguageActionTriggered);
+        connect( action, &QAction::triggered, this, &JIMainWindow::onLanguageActionTriggered);
     }
 
     QMenu* helpMenu = menuBar()->addMenu(tr("&Help"));

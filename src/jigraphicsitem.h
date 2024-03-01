@@ -1,9 +1,9 @@
-#ifndef SLGRAPHICSITEM_H
-#define SLGRAPHICSITEM_H
+#ifndef JIGRAPHICSITEM_H
+#define JIGRAPHICSITEM_H
 #include <QGraphicsObject>
 #include <QFont>
-#include "slcommon.h"
-class SLGraphicsItem : public QGraphicsObject
+#include "jicommon.h"
+class JIGraphicsItem : public QGraphicsObject
 {
     Q_OBJECT
 
@@ -35,8 +35,8 @@ public:
     };
 
     static constexpr int MIN_ITEM_SIZE_PIX = 10;
-    static const QSet<SLGraphicsItem::ControlPoint>& controlPoints();
-    SLGraphicsItem(QGraphicsItem* parent = nullptr);
+    static const QSet<JIGraphicsItem::ControlPoint>& controlPoints();
+    JIGraphicsItem(QGraphicsItem* parent = nullptr);
     QRectF boundingRect() const override;
     // alignControlPoint is important when m_preserveAspectRatio is true
     void    setRect(const QRectF& rect, const ControlPoint alignControlPoint=ControlPoint::Invalid);
@@ -97,7 +97,7 @@ protected:
     bool    m_transparentBackground = true;
 };
 
-QDebug operator<<(QDebug dbg, const SLGraphicsItem::ControlPoint &point);
+QDebug operator<<(QDebug dbg, const JIGraphicsItem::ControlPoint &point);
 // define qhash operator for ControlPoint
-uint qHash(const SLGraphicsItem::ControlPoint &point, uint seed = 0);
-#endif // SLGRAPHICSITEM_H
+uint qHash(const JIGraphicsItem::ControlPoint &point, uint seed = 0);
+#endif // JIGRAPHICSITEM_H

@@ -1,13 +1,13 @@
-#ifndef SLUNDOREDO_H
-#define SLUNDOREDO_H
+#ifndef JIUNDOREDO_H
+#define JIUNDOREDO_H
 #include <QList>
 #include <stdexcept>
 //! \todo Add "monitor/changed" function pointer
 //! \todo Reset should accept default value
-template <typename T> class SLUndoRedo
+template <typename T> class JIUndoRedo
 {
 public:
-    SLUndoRedo(const T& initialHead)
+    JIUndoRedo(const T& initialHead)
     {
         reset(initialHead);
     }
@@ -77,4 +77,4 @@ private:
     int m_stackPosition=-1;
 
 };
-#endif // SLUNDOREDO_H
+#endif // JIUNDOREDO_H

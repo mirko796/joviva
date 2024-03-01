@@ -1,9 +1,9 @@
-#include "slcommon.h"
+#include "jicommon.h"
 #include <math.h>
 #include <QFile>
 #include <QFileDialog>
 #include <QCoreApplication>
-namespace SL
+namespace JI
 {
 
 static QHash<PaperFormat, PaperFormatInfo> g_paperFormatInfos;
@@ -164,7 +164,7 @@ void showSaveFileDialog(QWidget *parent,
     if (filename.isEmpty())
         return;
     if (!filename.endsWith(defaultExtension)) {
-        filename+=QString(".%1").arg(SL::DefaultExtension);
+        filename+=QString(".%1").arg(JI::DefaultExtension);
     }
 
     QFile file(filename);

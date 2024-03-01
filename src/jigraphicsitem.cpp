@@ -1,4 +1,4 @@
-#include "slgraphicsitem.h"
+#include "jigraphicsitem.h"
 #include <QPainter>
 #include <QDebug>
 #include <QGraphicsSceneHoverEvent>
@@ -13,7 +13,7 @@
 
 #include <cmath>
 
-uint qHash(const SLGraphicsItem::ControlPoint &point, uint seed)
+uint qHash(const JIGraphicsItem::ControlPoint &point, uint seed)
 {
     return qHash(int(point),seed);
 }
@@ -21,9 +21,9 @@ uint qHash(const SLGraphicsItem::ControlPoint &point, uint seed)
 // DONE: fix resize when rotated
 // TODO: right click resets rotation
 // TODO: preserve aspect ratio when resize
-const QSet<SLGraphicsItem::ControlPoint>& SLGraphicsItem::controlPoints()
+const QSet<JIGraphicsItem::ControlPoint>& JIGraphicsItem::controlPoints()
 {
-    static QSet<SLGraphicsItem::ControlPoint> ret;
+    static QSet<JIGraphicsItem::ControlPoint> ret;
     if (ret.isEmpty()) {
         ret.insert(ControlPoint::TopLeft);
         ret.insert(ControlPoint::TopRight);
@@ -39,7 +39,7 @@ const QSet<SLGraphicsItem::ControlPoint>& SLGraphicsItem::controlPoints()
     return ret;
 }
 
-SLGraphicsItem::SLGraphicsItem(QGraphicsItem *parent) :
+JIGraphicsItem::JIGraphicsItem(QGraphicsItem *parent) :
     QGraphicsObject(parent),
     m_controlPointSizeFactor(8),
     m_rotateControlOffsetFactor(16)
@@ -50,10 +50,10 @@ SLGraphicsItem::SLGraphicsItem(QGraphicsItem *parent) :
     setAcceptHoverEvents(true);
 
     connect(this, &QGraphicsObject::rotationChanged,
-            this, &SLGraphicsItem::onRotationChanged);
+            this, &JIGraphicsItem::onRotationChanged);
 }
 
-void SLGraphicsItem::paint(QPainter *painter, const QStyleOptionGraphicsItem *option, QWidget *widget)
+void JIGraphicsItem::paint(QPainter *painter, const QStyleOptionGraphicsItem *option, QWidget *widget)
 {
 
     render(painter);
@@ -81,14 +81,14 @@ void SLGraphicsItem::paint(QPainter *painter, const QStyleOptionGraphicsItem *op
 #endif
 }
 
-void SLGraphicsItem::hoverMoveEvent(QGraphicsSceneHoverEvent *event)
+void JIGraphicsItem::hoverMoveEvent(QGraphicsSceneHoverEvent *event)
 {
     //set cursors depending on pos
     const ControlPoint cp = controlPointAt(event->pos());
     setCursor( cursorShape(cp) );
 }
 
-void SLGraphicsItem::mousePressEvent(QGraphicsSceneMouseEvent *event)
+void JIGraphicsItem::mousePressEvent(QGraphicsSceneMouseEvent *event)
 {
     if (!event->buttons().testFlag(Qt::LeftButton)) {
         QGraphicsItem::mousePressEvent(event);
@@ -116,7 +116,7 @@ void SLGraphicsItem::mousePressEvent(QGraphicsSceneMouseEvent *event)
  * and that the position is adjusted so that the item
  * is in the same place as before
  */
-void SLGraphicsItem::makeOriginPointCentered()
+void JIGraphicsItem::makeOriginPointCentered()
 {
     const auto before = mapToParent(m_rect.center());
     setTransformOriginPoint(m_rect.center());
@@ -125,7 +125,7 @@ void SLGraphicsItem::makeOriginPointCentered()
 }
 
 
-void SLGraphicsItem::mouseReleaseEvent(QGraphicsSceneMouseEvent *event)
+void JIGraphicsItem::mouseReleaseEvent(QGraphicsSceneMouseEvent *event)
 {
     const ControlPoint cp = controlPointAt(event->pos());
     qDebug()<<"Mouse release"<<int(cp);
@@ -139,7 +139,7 @@ void SLGraphicsItem::mouseReleaseEvent(QGraphicsSceneMouseEvent *event)
     QGraphicsItem::mouseReleaseEvent(event);
 }
 
-void SLGraphicsItem::mouseMoveEvent(QGraphicsSceneMouseEvent *event)
+void JIGraphicsItem::mouseMoveEvent(QGraphicsSceneMouseEvent *event)
 {
     if (!event->buttons().testFlag(Qt::LeftButton)) {
         QGraphicsItem::mouseMoveEvent(event);
@@ -169,7 +169,7 @@ void SLGraphicsItem::mouseMoveEvent(QGraphicsSceneMouseEvent *event)
         if (delta.y()>0) {
             angle += 180;
         }
-        angle = SL::normalizedAngle(angle);
+        angle = JI::normalizedAngle(angle);
         setRotation(angle);
         qDebug()<<"Emit rotation changed angle:"<<angle;
         emit rotationChangedByUser(angle);
@@ -216,7 +216,7 @@ void SLGraphicsItem::mouseMoveEvent(QGraphicsSceneMouseEvent *event)
     }
 }
 
-QRectF SLGraphicsItem::controlPointRect(const ControlPoint point) const
+QRectF JIGraphicsItem::controlPointRect(const ControlPoint point) const
 {
     const QRectF rect = this->rect();
     if (point == ControlPoint::Move) {
@@ -259,7 +259,7 @@ QRectF SLGraphicsItem::controlPointRect(const ControlPoint point) const
     return QRectF(center.x() - cps/2, center.y() - cps/2, cps, cps);
 }
 
-QCursor SLGraphicsItem::cursorShape(const ControlPoint point) const
+QCursor JIGraphicsItem::cursorShape(const ControlPoint point) const
 {
     QCursor ret(Qt::ArrowCursor);
     switch(point) {
@@ -291,7 +291,7 @@ QCursor SLGraphicsItem::cursorShape(const ControlPoint point) const
     return ret;
 }
 
-SLGraphicsItem::ControlPoint SLGraphicsItem::controlPointAt(const QPointF &pos) const
+JIGraphicsItem::ControlPoint JIGraphicsItem::controlPointAt(const QPointF &pos) const
 {
     const auto cp = controlPoints();
     foreach(const auto point, cp) {
@@ -305,19 +305,19 @@ SLGraphicsItem::ControlPoint SLGraphicsItem::controlPointAt(const QPointF &pos) 
     return ControlPoint::Invalid;
 }
 
-bool SLGraphicsItem::transparentBackground() const
+bool JIGraphicsItem::transparentBackground() const
 {
     return m_transparentBackground;
 }
 
-void SLGraphicsItem::setTransparentBackground(bool newTransparentBackground)
+void JIGraphicsItem::setTransparentBackground(bool newTransparentBackground)
 {
     m_transparentBackground = newTransparentBackground;
     transparentBackgroundChangedEvent();
     emitItemChanged();
 }
 
-QJsonObject SLGraphicsItem::asJson() const
+QJsonObject JIGraphicsItem::asJson() const
 {
     QJsonObject ret;
     ret[JK_X] = m_rect.x();
@@ -333,7 +333,7 @@ QJsonObject SLGraphicsItem::asJson() const
     return ret;
 }
 
-bool SLGraphicsItem::fromJson(const QJsonObject &obj)
+bool JIGraphicsItem::fromJson(const QJsonObject &obj)
 {
     static QList<QString> requiredKeys({
         JK_X,
@@ -362,7 +362,7 @@ bool SLGraphicsItem::fromJson(const QJsonObject &obj)
         obj[JK_WIDTH].toDouble(),
         obj[JK_HEIGHT].toDouble()
         );
-    const double rotation = SL::normalizedAngle(obj[JK_ROTATION].toDouble());
+    const double rotation = JI::normalizedAngle(obj[JK_ROTATION].toDouble());
     setRotation(rotation);
     setTransparentBackground(obj[JK_TRANSPARENT].toBool());
     setSortOrder(obj[JK_ZVALUE].toInt());
@@ -372,7 +372,7 @@ bool SLGraphicsItem::fromJson(const QJsonObject &obj)
     return true;
 }
 
-void SLGraphicsItem::setSortOrder(int newSortOrder)
+void JIGraphicsItem::setSortOrder(int newSortOrder)
 {
     if (m_sortOrder != newSortOrder) {
         m_sortOrder = newSortOrder;
@@ -381,17 +381,17 @@ void SLGraphicsItem::setSortOrder(int newSortOrder)
     }
 }
 
-int SLGraphicsItem::sortOrder() const
+int JIGraphicsItem::sortOrder() const
 {
     return m_sortOrder;
 }
 
-void SLGraphicsItem::onRotationChanged()
+void JIGraphicsItem::onRotationChanged()
 {
     emitItemChanged();
 }
 
-void SLGraphicsItem::emitItemChanged()
+void JIGraphicsItem::emitItemChanged()
 {
     qDebug()<<"Item changed, emiting signal...";
     emit itemChanged();
@@ -399,12 +399,12 @@ void SLGraphicsItem::emitItemChanged()
 
 
 #if 0
-double SLGraphicsItem::backgroundThreshold() const
+double JIGraphicsItem::backgroundThreshold() const
 {
     return m_backgroundThreshold;
 }
 
-void SLGraphicsItem::setBackgroundThreshold(double newBackgroundThreshold)
+void JIGraphicsItem::setBackgroundThreshold(double newBackgroundThreshold)
 {
     m_backgroundThreshold = newBackgroundThreshold;
     if (m_backgroundThreshold<0) {
@@ -438,17 +438,17 @@ void SLGraphicsItem::setBackgroundThreshold(double newBackgroundThreshold)
 
 }
 #endif
-bool SLGraphicsItem::drawRotateControl() const
+bool JIGraphicsItem::drawRotateControl() const
 {
     return m_drawRotateControl;
 }
 
-void SLGraphicsItem::setDrawRotateControl(bool newDrawRotateControl)
+void JIGraphicsItem::setDrawRotateControl(bool newDrawRotateControl)
 {
     m_drawRotateControl = newDrawRotateControl;
 }
 
-double SLGraphicsItem::controlPointSize() const
+double JIGraphicsItem::controlPointSize() const
 {
     double ret = m_controlPointSizeFactor;
     // view scale
@@ -458,7 +458,7 @@ double SLGraphicsItem::controlPointSize() const
     return ret;
 }
 
-double SLGraphicsItem::rotateControlOffset() const
+double JIGraphicsItem::rotateControlOffset() const
 {
     double ret = m_rotateControlOffsetFactor;
     // view scale
@@ -468,7 +468,7 @@ double SLGraphicsItem::rotateControlOffset() const
     return ret;
 }
 
-QVariant SLGraphicsItem::itemChange(GraphicsItemChange change, const QVariant &value)
+QVariant JIGraphicsItem::itemChange(GraphicsItemChange change, const QVariant &value)
 {
     if (change==ItemSelectedChange) {
         setTransformOriginPoint(rect().center());
@@ -476,12 +476,12 @@ QVariant SLGraphicsItem::itemChange(GraphicsItemChange change, const QVariant &v
     return QGraphicsItem::itemChange(change, value);
 }
 
-QRectF SLGraphicsItem::boundingRect() const
+QRectF JIGraphicsItem::boundingRect() const
 {
     return m_boundingRect;
 }
 
-void SLGraphicsItem::setRectDirect(const QRectF &rect)
+void JIGraphicsItem::setRectDirect(const QRectF &rect)
 {
     prepareGeometryChange();
     m_rect = rect;
@@ -496,7 +496,7 @@ void SLGraphicsItem::setRectDirect(const QRectF &rect)
     qDebug()<<"Item rect:"<<m_rect<<m_boundingRect;
 }
 
-void SLGraphicsItem::setRect(const QRectF &inputRect, const ControlPoint alignControlPoint)
+void JIGraphicsItem::setRect(const QRectF &inputRect, const ControlPoint alignControlPoint)
 {
     qDebug()<<"Set rect:"<<inputRect<<alignControlPoint;
     const QSizeF ar = this->aspectRatio();
@@ -564,12 +564,12 @@ void SLGraphicsItem::setRect(const QRectF &inputRect, const ControlPoint alignCo
     emitItemChanged();
 }
 
-QRectF SLGraphicsItem::rect() const
+QRectF JIGraphicsItem::rect() const
 {
     return m_rect;
 }
 
-QDebug operator<<(QDebug dbg, const SLGraphicsItem::ControlPoint &point) {
+QDebug operator<<(QDebug dbg, const JIGraphicsItem::ControlPoint &point) {
     dbg<<int(point);
     return dbg;
 }

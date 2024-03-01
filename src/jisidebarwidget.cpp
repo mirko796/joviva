@@ -1,15 +1,15 @@
-#include "slsidebarwidget.h"
-#include "ui_slsidebarwidget.h"
-#include "slgraphicsview.h"
-#include "slgraphicstextitem.h"
+#include "jisidebarwidget.h"
+#include "ui_jisidebarwidget.h"
+#include "jigraphicsview.h"
+#include "jigraphicstextitem.h"
 #include <QScopeGuard>
 // TODO: add 4 rotation presets 0,90,180,270
 // TODO: add bring to front, send to back
 // TODO: add preserve aspect ratio
 // TODO: add text option
-SLSideBarWidget::SLSideBarWidget(QWidget *parent) :
+JISideBarWidget::JISideBarWidget(QWidget *parent) :
     QWidget(parent),
-    ui(new Ui::SLSideBarWidget)
+    ui(new Ui::JISideBarWidget)
 {
     ui->setupUi(this);
     m_textButtons =
@@ -23,8 +23,8 @@ SLSideBarWidget::SLSideBarWidget(QWidget *parent) :
         ui->btn_right
         };
     m_textAlignButtons = {ui->btn_left, ui->btn_center, ui->btn_right};
-    connect(ui->sl_rotation, &QSlider::valueChanged, this, &SLSideBarWidget::onRotationChanged);
-    connect(ui->chb_transparent, &QCheckBox::stateChanged, this, &SLSideBarWidget::onTransparentChangedByUser);
+    connect(ui->sl_rotation, &QSlider::valueChanged, this, &JISideBarWidget::onRotationChanged);
+    connect(ui->chb_transparent, &QCheckBox::stateChanged, this, &JISideBarWidget::onTransparentChangedByUser);
 #ifdef Q_OS_WASM
     // disable text selection on wasm
     ui->pt_text->setTextInteractionFlags(Qt::TextEditable);
@@ -36,7 +36,7 @@ SLSideBarWidget::SLSideBarWidget(QWidget *parent) :
     foreach(auto btn, m_textButtons) {
         if (m_textAlignButtons.contains(btn))
         {
-            connect(btn, &QToolButton::clicked, this, &SLSideBarWidget::onTextAlignButtonClicked);
+            connect(btn, &QToolButton::clicked, this, &JISideBarWidget::onTextAlignButtonClicked);
         }
         else
         {
@@ -45,22 +45,22 @@ SLSideBarWidget::SLSideBarWidget(QWidget *parent) :
             });
         }
     }
-    connect(ui->pt_text, &QPlainTextEdit::textChanged, this, &SLSideBarWidget::updateTextItem);
+    connect(ui->pt_text, &QPlainTextEdit::textChanged, this, &JISideBarWidget::updateTextItem);
     updateUI();
     setMinimumWidth(300);
 }
 
-SLSideBarWidget::~SLSideBarWidget()
+JISideBarWidget::~JISideBarWidget()
 {
     delete ui;
 }
 
-SLGraphicsView *SLSideBarWidget::graphicsView() const
+JIGraphicsView *JISideBarWidget::graphicsView() const
 {
     return m_graphicsView;
 }
 
-void SLSideBarWidget::setGraphicsView(SLGraphicsView *newGraphicsView)
+void JISideBarWidget::setGraphicsView(JIGraphicsView *newGraphicsView)
 {
     if (m_graphicsView)
     {
@@ -69,14 +69,13 @@ void SLSideBarWidget::setGraphicsView(SLGraphicsView *newGraphicsView)
     m_graphicsView = newGraphicsView;
     if (m_graphicsView)
     {
-        connect(m_graphicsView, &SLGraphicsView::selectionChanged, this, &SLSideBarWidget::updateUI);
-        connect(m_graphicsView, &SLGraphicsView::itemRotationChangedByUser, this, &SLSideBarWidget::onRotationChangedByUser);
-//        connect(m_graphicsView, &SLGraphicsView::selectionChanged, this, &SLSideBarWidget::onSelectionChanged);
+        connect(m_graphicsView, &JIGraphicsView::selectionChanged, this, &JISideBarWidget::updateUI);
+        connect(m_graphicsView, &JIGraphicsView::itemRotationChangedByUser, this, &JISideBarWidget::onRotationChangedByUser);
     }
     updateUI();
 }
 
-Qt::Orientation SLSideBarWidget::orientation() const
+Qt::Orientation JISideBarWidget::orientation() const
 {
     if (!m_graphicsView)
     {
@@ -85,7 +84,7 @@ Qt::Orientation SLSideBarWidget::orientation() const
     return m_graphicsView->orientation();
 }
 
-void SLSideBarWidget::setOrientation(Qt::Orientation newOrientation)
+void JISideBarWidget::setOrientation(Qt::Orientation newOrientation)
 {
     if (!m_graphicsView)
     {
@@ -97,7 +96,7 @@ void SLSideBarWidget::setOrientation(Qt::Orientation newOrientation)
     updateUI();
 }
 
-void SLSideBarWidget::updateUI()
+void JISideBarWidget::updateUI()
 {
     if (!m_graphicsView)
     {
@@ -109,7 +108,7 @@ void SLSideBarWidget::updateUI()
     ui->lbl_rotation->setVisible(selectedItem);
     ui->sl_rotation->setVisible(selectedItem);
     ui->chb_transparent->setVisible(selectedItem);
-    const SLGraphicsTextItem *textItem = dynamic_cast<SLGraphicsTextItem*>(selectedItem);
+    const JIGraphicsTextItem *textItem = dynamic_cast<JIGraphicsTextItem*>(selectedItem);
     if (selectedItem)
     {
         ui->sl_rotation->setValue(selectedItem->rotation());
@@ -141,19 +140,19 @@ void SLSideBarWidget::updateUI()
 
 }
 
-void SLSideBarWidget::updateTextItem()
+void JISideBarWidget::updateTextItem()
 {
     qDebug()<<"Updating text item";
     if (m_updatingUI) return;
     auto selectedItem = m_graphicsView->selectedItem();
     if (!selectedItem) return;
-    auto textItem = dynamic_cast<SLGraphicsTextItem*>(selectedItem);
+    auto textItem = dynamic_cast<JIGraphicsTextItem*>(selectedItem);
     if (!textItem) return;
-    SL::TextParams textParams;
+    JI::TextParams textParams;
     textParams.text = ui->pt_text->toPlainText();
     textParams.font = QFont(
         ui->fcb_font->currentFont().family(),
-        SL::DefaultFontSize,
+        JI::DefaultFontSize,
         ui->btn_bold->isChecked()?QFont::Black:QFont::Normal,
         ui->btn_italic->isChecked()
         );
@@ -168,7 +167,7 @@ void SLSideBarWidget::updateTextItem()
     textItem->setTextParams(textParams);
 }
 
-void SLSideBarWidget::onRotationChanged(int rotation)
+void JISideBarWidget::onRotationChanged(int rotation)
 {
     if (m_graphicsView)
     {
@@ -180,7 +179,7 @@ void SLSideBarWidget::onRotationChanged(int rotation)
     }
 }
 
-void SLSideBarWidget::onRotationChangedByUser(SLGraphicsItem * /*item*/, double rotation)
+void JISideBarWidget::onRotationChangedByUser(JIGraphicsItem * /*item*/, double rotation)
 {
     qDebug()<<"Rotation changed by user:"<<rotation;
     if (rotation<0)
@@ -191,7 +190,7 @@ void SLSideBarWidget::onRotationChangedByUser(SLGraphicsItem * /*item*/, double 
     ui->sl_rotation->setValue(rotation);
 }
 
-void SLSideBarWidget::onTransparentChangedByUser(bool checked)
+void JISideBarWidget::onTransparentChangedByUser(bool checked)
 {
     if (m_updatingUI) return;
     auto selectedItem = m_graphicsView->selectedItem();
@@ -199,7 +198,7 @@ void SLSideBarWidget::onTransparentChangedByUser(bool checked)
     selectedItem->setTransparentBackground(checked);
 }
 
-void SLSideBarWidget::onTextAlignButtonClicked()
+void JISideBarWidget::onTextAlignButtonClicked()
 {
     auto btn = dynamic_cast<QToolButton*>(sender());
     QSet<QToolButton*> buttons = {ui->btn_left, ui->btn_center, ui->btn_right};

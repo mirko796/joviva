@@ -1,24 +1,24 @@
-#include "slgraphicsscene.h"
+#include "jigraphicsscene.h"
 #include <QPainter>
 #include <QGraphicsItem>
 
-SLGraphicsScene::SLGraphicsScene(QObject *parent) :
+JIGraphicsScene::JIGraphicsScene(QObject *parent) :
     QGraphicsScene(parent)
 {
-    connect(this, &SLGraphicsScene::selectionChanged,
-            this, &SLGraphicsScene::onSelectionChanged);
+    connect(this, &JIGraphicsScene::selectionChanged,
+            this, &JIGraphicsScene::onSelectionChanged);
 }
 
-SLGraphicsScene::~SLGraphicsScene()
+JIGraphicsScene::~JIGraphicsScene()
 {
     disconnect(this);
 }
 
-void SLGraphicsScene::onSelectionChanged()
+void JIGraphicsScene::onSelectionChanged()
 {
     const QList<QGraphicsItem*> selectedItems = this->selectedItems();
     QGraphicsItem* si = selectedItems.size() ? selectedItems.constFirst() : nullptr;
-    SLGraphicsItem* selectedItem = dynamic_cast<SLGraphicsItem*>(si);
+    JIGraphicsItem* selectedItem = dynamic_cast<JIGraphicsItem*>(si);
     if (m_lastSelectedItem!=selectedItem)
     {
         if (m_lastSelectedItem) {
@@ -43,7 +43,7 @@ void SLGraphicsScene::onSelectionChanged()
 
 }
 
-void SLGraphicsScene::bringSelectedItemToTop()
+void JIGraphicsScene::bringSelectedItemToTop()
 {
     if (m_lastSelectedItem)
     {
@@ -51,7 +51,7 @@ void SLGraphicsScene::bringSelectedItemToTop()
         int maxSortOrder = 0;
         for (auto _item : this->items())
         {
-            auto item = dynamic_cast<SLGraphicsItem*>(_item);
+            auto item = dynamic_cast<JIGraphicsItem*>(_item);
             if (item!=m_lastSelectedItem) {
                 maxSortOrder = qMax(maxSortOrder, item->sortOrder());
             }
@@ -61,7 +61,7 @@ void SLGraphicsScene::bringSelectedItemToTop()
     this->clearSelection();
 }
 
-void SLGraphicsScene::bringSelectedItemToBottom()
+void JIGraphicsScene::bringSelectedItemToBottom()
 {
     if (m_lastSelectedItem)
     {
@@ -69,7 +69,7 @@ void SLGraphicsScene::bringSelectedItemToBottom()
         int minSortOrder = std::numeric_limits<int>::max();
         for (auto _item : this->items())
         {
-            auto item = dynamic_cast<SLGraphicsItem*>(_item);
+            auto item = dynamic_cast<JIGraphicsItem*>(_item);
             if (item!=m_lastSelectedItem) {
                 minSortOrder = qMin(minSortOrder, item->sortOrder());
             }
@@ -79,7 +79,7 @@ void SLGraphicsScene::bringSelectedItemToBottom()
     this->clearSelection();
 }
 
-void SLGraphicsScene::drawBackground(QPainter *painter, const QRectF &rect)
+void JIGraphicsScene::drawBackground(QPainter *painter, const QRectF &rect)
 {
     Q_UNUSED(rect);
     painter->fillRect(sceneRect(), Qt::white);

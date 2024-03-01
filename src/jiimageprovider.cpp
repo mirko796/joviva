@@ -1,18 +1,18 @@
-#include "slimageprovider.h"
+#include "jiimageprovider.h"
 #include <QCryptographicHash>
 #include <QBitmap>
 #include <QBuffer>
-SLImageProvider::SLImageProvider()
+JIImageProvider::JIImageProvider()
 {
 
 }
 
-SLImageProvider::~SLImageProvider()
+JIImageProvider::~JIImageProvider()
 {
     clear();
 }
 
-SLImageProvider::PixmapId SLImageProvider::addPixmap(const QPixmap &pixmap)
+JIImageProvider::PixmapId JIImageProvider::addPixmap(const QPixmap &pixmap)
 {
     const QImage image = pixmap.toImage();
     const char* rawPtr = reinterpret_cast<const char*>(image.bits());
@@ -23,7 +23,7 @@ SLImageProvider::PixmapId SLImageProvider::addPixmap(const QPixmap &pixmap)
     return hashString;
 }
 
-const QPixmap* SLImageProvider::pixmap(const PixmapId &id, const bool transparentBackground) const
+const QPixmap* JIImageProvider::pixmap(const PixmapId &id, const bool transparentBackground) const
 {
     const QPixmap* ret = m_pixmaps.value(id, nullptr);
     if (transparentBackground && ret) {
@@ -53,13 +53,13 @@ const QPixmap* SLImageProvider::pixmap(const PixmapId &id, const bool transparen
     return ret;
 }
 
-QSet<SLImageProvider::PixmapId> SLImageProvider::pixmapIds() const
+QSet<JIImageProvider::PixmapId> JIImageProvider::pixmapIds() const
 {
     const auto list = m_pixmaps.keys();
-    return QSet<SLImageProvider::PixmapId>(list.begin(), list.end());
+    return QSet<JIImageProvider::PixmapId>(list.begin(), list.end());
 }
 
-void SLImageProvider::clear()
+void JIImageProvider::clear()
 {
     qDeleteAll(m_pixmaps);
     qDeleteAll(m_transparentPixmaps);
@@ -67,7 +67,7 @@ void SLImageProvider::clear()
     m_transparentPixmaps.clear();
 }
 
-QJsonObject SLImageProvider::asJson() const
+QJsonObject JIImageProvider::asJson() const
 {
     QJsonObject obj;
     QJsonObject pixObj;
@@ -85,7 +85,7 @@ QJsonObject SLImageProvider::asJson() const
     return obj;
 }
 
-bool SLImageProvider::fromJson(const QJsonObject &obj)
+bool JIImageProvider::fromJson(const QJsonObject &obj)
 {
     if (obj.contains(JK_IMAGES)==false) {
         return false;

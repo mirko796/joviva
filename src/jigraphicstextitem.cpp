@@ -1,24 +1,24 @@
-#include "slgraphicstextitem.h"
+#include "jigraphicstextitem.h"
 #include <QPainter>
 #include <QDebug>
 #include <QFontMetrics>
-SLGraphicsTextItem::SLGraphicsTextItem() :
-    SLGraphicsItem()
+JIGraphicsTextItem::JIGraphicsTextItem() :
+    JIGraphicsItem()
 {
     m_preserveAspectRatio = false;
 }
 
-SL::TextParams SLGraphicsTextItem::textParams() const
+JI::TextParams JIGraphicsTextItem::textParams() const
 {
     return m_textParams;
 }
 
-QSizeF SLGraphicsTextItem::aspectRatio() const
+QSizeF JIGraphicsTextItem::aspectRatio() const
 {
     return m_path.boundingRect().size();
 }
 
-void SLGraphicsTextItem::render(QPainter *painter)
+void JIGraphicsTextItem::render(QPainter *painter)
 {
     painter->save();
     const auto &path = m_path;
@@ -42,12 +42,12 @@ void SLGraphicsTextItem::render(QPainter *painter)
     painter->restore();
 }
 
-void SLGraphicsTextItem::transparentBackgroundChangedEvent()
+void JIGraphicsTextItem::transparentBackgroundChangedEvent()
 {
     refreshPath();
 }
 
-void SLGraphicsTextItem::refreshPath()
+void JIGraphicsTextItem::refreshPath()
 {
     if (m_rect.isEmpty()) return;
     const QString text = m_textParams.text.isEmpty() ? QString("          ") : m_textParams.text;
@@ -134,23 +134,23 @@ void SLGraphicsTextItem::refreshPath()
 #endif
 }
 
-void SLGraphicsTextItem::setTextParams(const SL::TextParams& textParams)
+void JIGraphicsTextItem::setTextParams(const JI::TextParams& textParams)
 {
     m_textParams = textParams;
     refreshPath();
     makeOriginPointCentered();
     emitItemChanged();
 }
-QJsonObject SLGraphicsTextItem::asJson() const
+QJsonObject JIGraphicsTextItem::asJson() const
 {
-    QJsonObject obj = SLGraphicsItem::asJson();
+    QJsonObject obj = JIGraphicsItem::asJson();
     obj[JK_TEXTPARAMS] = m_textParams.asJson();
     return obj;
 }
 
-bool SLGraphicsTextItem::fromJson(const QJsonObject &obj)
+bool JIGraphicsTextItem::fromJson(const QJsonObject &obj)
 {
-    if (!SLGraphicsItem::fromJson(obj))
+    if (!JIGraphicsItem::fromJson(obj))
         return false;
     const QRectF jsonRect(
         obj[JK_X].toDouble(),
@@ -158,7 +158,7 @@ bool SLGraphicsTextItem::fromJson(const QJsonObject &obj)
         obj[JK_WIDTH].toDouble(),
         obj[JK_HEIGHT].toDouble()
         );
-    SL::TextParams params;
+    JI::TextParams params;
     if (!params.fromJson(obj[JK_TEXTPARAMS].toObject())) {
         return false;
     }

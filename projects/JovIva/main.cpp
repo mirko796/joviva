@@ -1,4 +1,4 @@
-#include "slmainwindow.h"
+#include "jimainwindow.h"
 
 #include <QApplication>
 #include <QLocale>
@@ -13,7 +13,7 @@ int main(int argc, char *argv[])
     qDebug()<<"==== Starting application ===";
     qDebug()<<"Version:"<<APP_VERSION<<" ["<<GIT_COMMIT<<"]  Built on:"<<__DATE__<<__TIME__;
     a.setWindowIcon(QIcon(":/app-icon.png"));
-    SLMainWindow::Translators translators;
+    JIMainWindow::Translators translators;
     auto serbian = QSharedPointer<QTranslator>(new QTranslator());
     if (serbian->load(":/translations/srpski.qm"))
     {
@@ -29,7 +29,7 @@ int main(int argc, char *argv[])
 //        }
 //    }
     QSettings settings;
-    SLMainWindow w(&settings,translators);
+    JIMainWindow w(&settings,translators);
     w.show();
     // load from first param if provided
     if (argc > 1)

@@ -1,18 +1,18 @@
-#include "slprintpreview.h"
+#include "jiprintpreview.h"
 #include <QPrintPreviewDialog>
 #include <QPrinter>
 #include <QPrintDialog>
 
-QPageSize pageSizeFromDocumentSize(const SL::DocumentSize& docsize)
+QPageSize pageSizeFromDocumentSize(const JI::DocumentSize& docsize)
 {
     switch (docsize.paperFormat()) {
-    case SL::psA4:
+    case JI::psA4:
         return QPageSize(QPageSize::A4);
-    case SL::psB4:
+    case JI::psB4:
         return QPageSize(QPageSize::B4);
-    case SL::psLetter:
+    case JI::psLetter:
         return QPageSize(QPageSize::Letter);
-    case SL::psLegal:
+    case JI::psLegal:
         return QPageSize(QPageSize::Legal);
     default:
         break;
@@ -20,14 +20,14 @@ QPageSize pageSizeFromDocumentSize(const SL::DocumentSize& docsize)
 
     return QPageSize(docsize.sizeInPixels());
 }
-SLPrintPreview::SLPrintPreview(SLGraphicsView *view) :
+JIPrintPreview::JIPrintPreview(JIGraphicsView *view) :
     m_view(view),
     m_orientation(Qt::Vertical)
 {
 
 }
 
-void SLPrintPreview::printPreview(const SL::DocumentSize& docsize)
+void JIPrintPreview::printPreview(const JI::DocumentSize& docsize)
 {
     const QPageLayout::Orientation orientation =
         docsize.orientation() == Qt::Vertical ? QPageLayout::Portrait : QPageLayout::Landscape;
@@ -38,12 +38,12 @@ void SLPrintPreview::printPreview(const SL::DocumentSize& docsize)
 
 
     QPrintPreviewDialog preview(&printer, m_view->parentWidget());
-    connect(&preview, &QPrintPreviewDialog::paintRequested, this, &SLPrintPreview::paintPage);
+    connect(&preview, &QPrintPreviewDialog::paintRequested, this, &JIPrintPreview::paintPage);
 
     preview.exec();
 }
 
-void SLPrintPreview::printDirect(const SL::DocumentSize &docsize)
+void JIPrintPreview::printDirect(const JI::DocumentSize &docsize)
 {
     const QPageLayout::Orientation orientation =
         docsize.orientation() == Qt::Vertical ? QPageLayout::Portrait : QPageLayout::Landscape;
@@ -59,7 +59,7 @@ void SLPrintPreview::printDirect(const SL::DocumentSize &docsize)
     paintPage(&printer);
 }
 
-void SLPrintPreview::paintPage(QPrinter *printer)
+void JIPrintPreview::paintPage(QPrinter *printer)
 {
     auto view = m_view;
     QPainter painter(printer);

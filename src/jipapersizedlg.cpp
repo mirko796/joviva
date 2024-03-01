@@ -27,37 +27,37 @@ JIPaperSizeDlg::~JIPaperSizeDlg()
     delete ui;
 }
 
-void JIPaperSizeDlg::setDocumentSize(const SL::DocumentSize &size)
+void JIPaperSizeDlg::setDocumentSize(const JI::DocumentSize &size)
 {
     m_updatingSize = true;
     ui->sb_width->setValue(size.sizeInPixels().width());
     ui->sb_height->setValue(size.sizeInPixels().height());
     ui->cmb_orientation->setCurrentIndex(ui->cmb_orientation->findData(size.orientation()));
     ui->cmb_paperFormat->setCurrentIndex(ui->cmb_paperFormat->findData(size.paperFormat()));
-    const SL::PaperFormatInfo info = SL::getPaperFormatInfo(size.paperFormat());
+    const JI::PaperFormatInfo info = JI::getPaperFormatInfo(size.paperFormat());
     const int dpi = 25.4 * size.sizeInPixels().width() / info.sizeInMM.width();
     ui->sb_dpi->setValue(dpi);
     m_updatingSize = false;
     updateSizeInPixels(ui->sb_width);
 }
 
-SL::DocumentSize JIPaperSizeDlg::getDocumentSize() const
+JI::DocumentSize JIPaperSizeDlg::getDocumentSize() const
 {
-    SL::DocumentSize ret;
+    JI::DocumentSize ret;
     QSize s(ui->sb_width->value(), ui->sb_height->value());
     ret.setSizeInPixels(s);
     ret.setOrientation(static_cast<Qt::Orientation>(ui->cmb_orientation->currentData().toInt()));
-    ret.setPaperFormat(static_cast<SL::PaperFormat>(ui->cmb_paperFormat->currentData().toInt()));
+    ret.setPaperFormat(static_cast<JI::PaperFormat>(ui->cmb_paperFormat->currentData().toInt()));
     return ret;
 }
 
 void JIPaperSizeDlg::populatePaperFormats()
 {
-    QHash<QString, SL::PaperFormatInfo> paperFormats;
-    const auto formats = SL::getPaperFormats();
-    for (SL::PaperFormat format : SL::getPaperFormats())
+    QHash<QString, JI::PaperFormatInfo> paperFormats;
+    const auto formats = JI::getPaperFormats();
+    for (JI::PaperFormat format : JI::getPaperFormats())
     {
-        auto info = SL::getPaperFormatInfo(format);
+        auto info = JI::getPaperFormatInfo(format);
         const QString name = QString("%1 (%2 x %3mm)").arg(info.name).arg(info.sizeInMM.width()).arg(info.sizeInMM.height());
         paperFormats[name] = info;
     }
@@ -84,7 +84,7 @@ void JIPaperSizeDlg::updateSizeInPixels(const QWidget *pivotWidget)
         return;
     }
     QScopedValueRollback<bool> _rb(m_updatingSize, true);
-    const SL::PaperFormatInfo info = SL::getPaperFormatInfo(static_cast<SL::PaperFormat>(ui->cmb_paperFormat->currentData().toInt()));
+    const JI::PaperFormatInfo info = JI::getPaperFormatInfo(static_cast<JI::PaperFormat>(ui->cmb_paperFormat->currentData().toInt()));
     ui->sb_dpi->setEnabled(!info.sizeInMM.isEmpty());
     int wPix = 0;
     int hPix = 0;

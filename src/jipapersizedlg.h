@@ -2,7 +2,7 @@
 #define JIPAPERSIZEDLG_H
 
 #include <QDialog>
-#include "slcommon.h"
+#include "jicommon.h"
 
 namespace Ui {
 class JIPaperSizeDlg;
@@ -16,8 +16,8 @@ public:
     explicit JIPaperSizeDlg(QWidget *parent = nullptr);
     ~JIPaperSizeDlg();
 
-    void    setDocumentSize(const SL::DocumentSize& size);
-    SL::DocumentSize    getDocumentSize() const;
+    void    setDocumentSize(const JI::DocumentSize& size);
+    JI::DocumentSize    getDocumentSize() const;
 private:
     Ui::JIPaperSizeDlg *ui;
     bool    m_updatingSize = false;

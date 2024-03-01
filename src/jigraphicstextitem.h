@@ -1,18 +1,18 @@
-#ifndef SLGRAPHICSTEXTITEM_H
-#define SLGRAPHICSTEXTITEM_H
-#include "slgraphicsitem.h"
-#include "slcommon.h"
-class SLGraphicsTextItem : public SLGraphicsItem
+#ifndef JIGRAPHICSTEXTITEM_H
+#define JIGRAPHICSTEXTITEM_H
+#include "jigraphicsitem.h"
+#include "jicommon.h"
+class JIGraphicsTextItem : public JIGraphicsItem
 {
     Q_OBJECT
 public:
     enum { Type = UserType + 2 };
     static constexpr char const* const JK_TEXTPARAMS = "textparams";
 
-    SLGraphicsTextItem();
+    JIGraphicsTextItem();
 
-    void    setTextParams(const SL::TextParams& textParams);
-    SL::TextParams textParams() const;
+    void    setTextParams(const JI::TextParams& textParams);
+    JI::TextParams textParams() const;
 
     QSizeF aspectRatio() const override;
     void render(QPainter* painter) override;
@@ -26,10 +26,10 @@ protected:
     void refreshPath();
     void transparentBackgroundChangedEvent() override;
 private:
-    SL::TextParams m_textParams;
+    JI::TextParams m_textParams;
 
     QPainterPath m_path;
 
 };
 
-#endif // SLGRAPHICSTEXTITEM_H
+#endif // JIGRAPHICSTEXTITEM_H
