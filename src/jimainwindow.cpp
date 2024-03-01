@@ -12,12 +12,14 @@
 #include <QTimer>
 #include <QBuffer>
 #include <QPlainTextEdit>
+#include "jiactions.h"
+using namespace JIActions;
+
 #ifdef Q_OS_WASM
 #include <emscripten.h>
 #include <emscripten/bind.h>
 const char* byteArray = "Hello, World!";
 static JIMainWindow* g_mainWindow = nullptr;
-
 void pasteTextWasm(const std::string& text) {
     if (g_mainWindow) {
         g_mainWindow->pasteTextWasm(QString::fromStdString(text));
@@ -83,7 +85,7 @@ JIMainWindow::~JIMainWindow()
 
 void JIMainWindow::loadFromSettings()
 {
-    m_actions[actShowButtonText]->setChecked(
+    getAction(actShowButtonText)->setChecked(
         m_settings->value(JI::SettingsKeyShowButtonTexts, false).toBool()
         );
     const QString lang = m_settings->value(JI::SettingsKeyLanguage, "").toString();
@@ -374,17 +376,17 @@ void JIMainWindow::onItemsChanged()
 
 void JIMainWindow::updateActions()
 {
-    m_actions[actUndo]->setEnabled(m_undoRedo.canUndo());
-    m_actions[actRedo]->setEnabled(m_undoRedo.canRedo());
+    getAction(actUndo)->setEnabled(m_undoRedo.canUndo());
+    getAction(actRedo)->setEnabled(m_undoRedo.canRedo());
 
     const auto orientation = ui->graphicsView->orientation();
-    m_actions[actLandscape]->setChecked(orientation==Qt::Horizontal);
-    m_actions[actPortrait]->setChecked(orientation==Qt::Vertical);
+    getAction(actLandscape)->setChecked(orientation==Qt::Horizontal);
+    getAction(actPortrait)->setChecked(orientation==Qt::Vertical);
 
     bool modified = isModified() || m_fileName.isEmpty();
 
-    m_actions[actSave]->setEnabled(modified);
-    m_actions[actSaveAs]->setEnabled(m_fileName.isEmpty()==false);
+    getAction(actSave)->setEnabled(modified);
+    getAction(actSaveAs)->setEnabled(m_fileName.isEmpty()==false);
 }
 
 void JIMainWindow::undo()
@@ -421,7 +423,7 @@ void JIMainWindow::redo()
 void JIMainWindow::updateButtonsTextVisibility()
 {
     const auto buttons = findChildren<QToolButton*>();
-    const bool textVisible = m_actions[actShowButtonText]->isChecked();
+    const bool textVisible = getAction(actShowButtonText)->isChecked();
     for (auto button: buttons) {
         button->setIconSize(QSize(24,24));
         button->setToolButtonStyle(textVisible ? Qt::ToolButtonTextUnderIcon : Qt::ToolButtonIconOnly);
@@ -551,197 +553,91 @@ void JIMainWindow::loadFromByteArray(const QByteArray &data, const QString& file
 
 void JIMainWindow::initActions()
 {
-    auto createAction = [this](Action act, const QString &text, const QKeySequence &shortcut=QKeySequence(), const QString& icon=QString(), QToolButton* btn=nullptr) {
-        auto action = new QAction(text, this);
-        action->setToolTip(text);
-        action->setShortcut(shortcut);
-        action->setShortcutContext(Qt::ApplicationShortcut);
-        if (icon.size()) {
-            action->setIcon(QIcon(icon));
-        }
+    auto setActionButton = [](Action act, QToolButton* btn) {
+        auto action = getAction(act);
         if (btn) {
             btn->setDefaultAction(action);
-            QString tooltip = text;
+            QString tooltip = action->text();
+            const auto shortcut = action->shortcut();
             if (shortcut.isEmpty()==false) {
                 tooltip+=QString(" (%1)").arg(shortcut.toString());
             }
             btn->setToolTip(tooltip);
         }
-        m_actions[act] = action;
     };
-    createAction(
-        actNew,
-        tr("New"),
-        QKeySequence::New,
-        ":/new-icon.png",
-        ui->btn_new);
+    auto connectAction = [this](Action act, auto slot) {
+        auto action = getAction(act);
+        if (action) {
+            connect(action, &QAction::triggered, this, slot);
+        }
+    };
+    setActionButton(actNew, ui->btn_new);
+    setActionButton(actOpen, ui->btn_load);
+    setActionButton(actSave, ui->btn_save);
+    setActionButton(actPaste, ui->btn_paste);
+    setActionButton(actAddImage, ui->btn_addImage);
+    setActionButton(actAddText, ui->btn_text);
+    setActionButton(actUndo, ui->btn_undo);
+    setActionButton(actRedo, ui->btn_redo);
+    setActionButton(actPortrait, ui->btn_portrait);
+    setActionButton(actLandscape, ui->btn_landscape);
+    setActionButton(actPrint, ui->btn_print);
+    setActionButton(actPrintPreview, ui->btn_preview);
+    setActionButton(actPaperSize, ui->btn_paperSize);
+    setActionButton(actExportImage, ui->btn_exportImage);
 
-    createAction(
-        actOpen,
-        tr("Open"),
-        QKeySequence::Open,
-        ":/open-icon.png",
-        ui->btn_load);
-
-    createAction(
-        actSave,
-        tr("Save"),
-        QKeySequence::Save,
-        ":/save-icon.png",
-        ui->btn_save);
-
-    createAction(
-        actSaveAs,
-        tr("Save As"),
-        QKeySequence::SaveAs,
-        ":/saveas-icon.png");
-    createAction(
-        actPaste,
-        tr("Paste"),
-#ifdef Q_OS_WASM
-        /* handled by JS part */
-        QKeySequence(),
-#else
-        QKeySequence::Paste,
-#endif
-        ":/paste-icon.png",
-        ui->btn_paste);
-
-    createAction(
-        actAddImage,
-        tr("Add Image"),
-        QKeySequence(tr("Ctrl+I")),
-        ":/add-image-icon.png",
-        ui->btn_addImage);
-
-    createAction(
-        actAddText,
-        tr("Add Text"),
-        QKeySequence(tr("Ctrl+T")),
-        ":/add-text-icon.png",
-        ui->btn_text);
-
-    createAction(
-        actUndo,
-        tr("Undo"),
-        QKeySequence::Undo,
-        ":/undo-icon.png",
-        ui->btn_undo);
-
-    createAction(
-        actRedo,
-        tr("Redo"),
-        QKeySequence::Redo,
-        ":/redo-icon.png",
-        ui->btn_redo);
-
-    createAction(
-        actPortrait,
-        tr("Portrait"),
-        QKeySequence(),
-        ":/portrait-icon.png",
-        ui->btn_portrait);
-    m_actions[actPortrait]->setCheckable(true);
-
-    createAction(
-        actLandscape,
-        tr("Landscape"),
-        QKeySequence(),
-        ":/landscape-icon.png",
-        ui->btn_landscape);
-    m_actions[actLandscape]->setCheckable(true);
-
-    createAction(
-        actPrint,
-        tr("Print"),
-        QKeySequence(),
-        ":/print-icon.png",
-        ui->btn_print);
-
-    createAction(
-        actPrintPreview,
-        tr("Print Preview"),
-        QKeySequence(tr("Ctrl+P")),
-        ":/print-preview-icon.png",
-        ui->btn_preview);
-
-    createAction(
-        actShowButtonText,
-        tr("Show Buttons Text"));
-    m_actions[actShowButtonText]->setCheckable(true);
-
-    createAction(
-        actAbout,
-        tr("About"));
-
-    createAction(
-        actPaperSize,
-        tr("Set Paper Size"),
-        QKeySequence(),
-        ":/paper-size-icon.png",
-        ui->btn_paperSize);
-
-    createAction(
-        actExportImage,
-        tr("Export As Image"),
-        QKeySequence(),
-        ":/add-image-icon.png",
-        ui->btn_exportImage);
-
-    connect(m_actions[actNew], &QAction::triggered, this, &JIMainWindow::startNewDocument);
-    connect(m_actions[actOpen], &QAction::triggered, this, &JIMainWindow::loadFromFile);
-    connect(m_actions[actSave], &QAction::triggered, this, &JIMainWindow::saveToFile);
-    connect(m_actions[actSaveAs], &QAction::triggered, this, &JIMainWindow::saveAsToFile);
-    connect(m_actions[actPaste], &QAction::triggered, this, &JIMainWindow::pasteContent);
-    connect(m_actions[actAddImage], &QAction::triggered, this, &JIMainWindow::addImageFromLocalFile);
-    connect(m_actions[actAddText], &QAction::triggered, this, [this](){
+    connectAction(actNew, &JIMainWindow::startNewDocument);
+    connectAction(actOpen, &JIMainWindow::loadFromFile);
+    connectAction(actSave, &JIMainWindow::saveToFile);
+    connectAction(actSaveAs, &JIMainWindow::saveAsToFile);
+    connectAction(actPaste, &JIMainWindow::pasteContent);
+    connectAction(actAddImage, &JIMainWindow::addImageFromLocalFile);
+    connectAction(actAddText, [this]() {
         addText();
     });
-    connect(m_actions[actUndo], &QAction::triggered, this, &JIMainWindow::undo);
-    connect(m_actions[actRedo], &QAction::triggered, this, &JIMainWindow::redo);
-    connect(m_actions[actPortrait], &QAction::triggered, [this](){
+    connectAction(actUndo, &JIMainWindow::undo);
+    connectAction(actRedo, &JIMainWindow::redo);
+    connectAction(actPortrait, [this](){
         ui->graphicsView->setOrientation(Qt::Vertical);
     });
-    connect(m_actions[actLandscape], &QAction::triggered, [this](){
+    connectAction(actLandscape, [this](){
         ui->graphicsView->setOrientation(Qt::Horizontal);
     });
-    connect(m_actions[actPrint], &QAction::triggered, this, &JIMainWindow::print);
-    connect(m_actions[actPrintPreview], &QAction::triggered, this, &JIMainWindow::printPreview);
-    connect(m_actions[actShowButtonText], &QAction::triggered, this, &JIMainWindow::updateButtonsTextVisibility);
-    connect(m_actions[actAbout], &QAction::triggered, this, &JIMainWindow::about);
-    connect(m_actions[actPaperSize], &QAction::triggered, this, &JIMainWindow::setPaperSize);
-    connect(m_actions[actExportImage], &QAction::triggered, this, &JIMainWindow::exportAsImage);
-    // add all actions to main window
-    addActions(m_actions.values());
+    connectAction(actPrint, &JIMainWindow::print);
+    connectAction(actPrintPreview, &JIMainWindow::printPreview);
+    connectAction(actShowButtonText, &JIMainWindow::updateButtonsTextVisibility);
+    connectAction(actAbout, &JIMainWindow::about);
+    connectAction(actPaperSize, &JIMainWindow::setPaperSize);
+    connectAction(actExportImage, &JIMainWindow::exportAsImage);
 
 }
 
 void JIMainWindow::initMainMenu()
 {
     QMenu* fileMenu = menuBar()->addMenu(tr("&File"));
-    fileMenu->addAction(m_actions[actNew]);
-    fileMenu->addAction(m_actions[actOpen]);
-    fileMenu->addAction(m_actions[actSave]);
-    fileMenu->addAction(m_actions[actSaveAs]);
+    fileMenu->addAction(getAction(actNew));
+    fileMenu->addAction(getAction(actOpen));
+    fileMenu->addAction(getAction(actSave));
+    fileMenu->addAction(getAction(actSaveAs));
     fileMenu->addSeparator();
-    fileMenu->addAction(m_actions[actExportImage]);
+    fileMenu->addAction(getAction(actExportImage));
     fileMenu->addSeparator();
-    fileMenu->addAction(m_actions[actPrint]);
-    fileMenu->addAction(m_actions[actPrintPreview]);
+    fileMenu->addAction(getAction(actPrint));
+    fileMenu->addAction(getAction(actPrintPreview));
     QMenu* editMenu = menuBar()->addMenu(tr("&Edit"));
-    editMenu->addAction(m_actions[actUndo]);
-    editMenu->addAction(m_actions[actRedo]);
+    editMenu->addAction(getAction(actUndo));
+    editMenu->addAction(getAction(actRedo));
     editMenu->addSeparator();
-    editMenu->addAction(m_actions[actPaste]);
-    editMenu->addAction(m_actions[actAddImage]);
-    editMenu->addAction(m_actions[actAddText]);
+    editMenu->addAction(getAction(actPaste));
+    editMenu->addAction(getAction(actAddImage));
+    editMenu->addAction(getAction(actAddText));
     editMenu->addSeparator();
-    editMenu->addAction(m_actions[actPaperSize]);
+    editMenu->addAction(getAction(actPaperSize));
     QMenu* viewMenu = menuBar()->addMenu(tr("&View"));
-    viewMenu->addAction(m_actions[actPortrait]);
-    viewMenu->addAction(m_actions[actLandscape]);
+    viewMenu->addAction(getAction(actPortrait));
+    viewMenu->addAction(getAction(actLandscape));
     viewMenu->addSeparator();
-    viewMenu->addAction(m_actions[actShowButtonText]);
+    viewMenu->addAction(getAction(actShowButtonText));
     viewMenu->addSeparator();
     m_languageMenu = viewMenu->addMenu(tr("Languages"));
     for (const auto& lang: m_translators.keys()) {
@@ -752,6 +648,6 @@ void JIMainWindow::initMainMenu()
     }
 
     QMenu* helpMenu = menuBar()->addMenu(tr("&Help"));
-    helpMenu->addAction(m_actions[actAbout]);
+    helpMenu->addAction(getAction(actAbout));
 }
 

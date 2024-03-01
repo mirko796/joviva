@@ -15,6 +15,7 @@ CONFIG += c++17
 SRC_DIR = $$PWD/src
 INCLUDEPATH *= $$SRC_DIR
 SOURCES *= \
+    $$PWD/src/jiactions.cpp \
     $$PWD/src/jipapersizedlg.cpp \
     $$SRC_DIR/jiaboutdlg.cpp \
     $$SRC_DIR/jicommon.cpp \
@@ -29,6 +30,7 @@ SOURCES *= \
     $$SRC_DIR/jisidebarwidget.cpp
 
 HEADERS *= \
+    $$PWD/src/jiactions.h \
     $$PWD/src/jipapersizedlg.h \
     $$SRC_DIR/jiaboutdlg.h \
     $$SRC_DIR/jiundoredo.h \

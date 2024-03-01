@@ -164,7 +164,7 @@ void JIGraphicsItem::mouseMoveEvent(QGraphicsSceneMouseEvent *event)
     } else if (m_captureControlPoint == ControlPoint::Rotate) {
         const QPointF origin = m_captureItemRect.center();
         setTransformOriginPoint(origin);
-        const auto delta = event->scenePos() - origin;
+        const auto delta = event->scenePos() - mapToScene(origin);
         double angle = -atan(delta.x()/delta.y())*180/M_PI;
         if (delta.y()>0) {
             angle += 180;

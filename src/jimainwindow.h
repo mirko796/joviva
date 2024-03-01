@@ -16,27 +16,6 @@ class JIMainWindow : public QMainWindow
 {
     Q_OBJECT
 
-    enum Action {
-        actNew,
-        actOpen,
-        actSave,
-        actSaveAs,
-        actPaste,
-        actDelete,
-        actUndo,
-        actRedo,
-        actPrint,
-        actPrintPreview,
-        actAddImage,
-        actAddText,
-        actPortrait,
-        actLandscape,
-        actShowButtonText,
-        actAbout,
-        actPaperSize,
-        actExportImage
-    };
-
 public:
     typedef QHash<QString, QSharedPointer<QTranslator> > Translators;
     JIMainWindow(QSettings* settings, const Translators& translators, QWidget *parent = nullptr);
@@ -72,7 +51,6 @@ private:
     QMenu* m_languageMenu;
     JIUndoRedo<QJsonObject> m_undoRedo;
     bool    m_restoring = false;
-    QHash<Action, QAction*> m_actions;
     QString m_fileName;
     QJsonObject m_savedContent;
     JIAboutDlg  m_aboutDlg;
