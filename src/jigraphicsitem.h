@@ -16,6 +16,12 @@ public:
     JSONKEY JK_TRANSPARENT = "transparent";
     JSONKEY JK_ZVALUE = "z";
     JSONKEY JK_TYPE = "type";
+    /**
+     *  due to problem with transformOriginPoint we are storing
+     *  both position of the item and position of the rect
+     *  There must be a better way to avoid this redundancy but
+     *  I failed to find it within limited time
+     **/
     JSONKEY JK_POSX = "posx";
     JSONKEY JK_POSY = "posy";
 
