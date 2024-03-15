@@ -2,6 +2,7 @@
 #include <QGraphicsTextItem>
 #include "jigraphicspixmapitem.h"
 #include "jigraphicstextitem.h"
+#include "jiactions.h"
 #include <QMenu>
 #include <QContextMenuEvent>
 #include <QCoreApplication>
@@ -18,7 +19,8 @@ JIGraphicsView::JIGraphicsView(QWidget *parent) :
 
     connect(&m_scene, &QGraphicsScene::selectionChanged,
             this, &JIGraphicsView::selectionChanged);
-
+    connect(JIActions::getAction(JIActions::actDuplicateObject), &QAction::triggered,
+            this, &JIGraphicsView::duplicateSelectedObject);
     updateSceneSize();
     m_itemsChangedTimer.setSingleShot(true);
     connect(&m_itemsChangedTimer, &QTimer::timeout,
@@ -31,28 +33,31 @@ JIGraphicsView::~JIGraphicsView()
     qApp->removeEventFilter(this);
 }
 
+QRectF JIGraphicsView::defaultRectForNewItem() const
+{
+    const QSize ps = paperSizeWithOrientation();
+    return QRectF(
+        ps.width()*0.3, ps.height()*0.3,
+        ps.width()*0.4, ps.height()*0.4
+        );
+}
+
+
 void JIGraphicsView::addPixmapItem(const QPixmap &pixmap)
 {
     const auto id = m_provider.addPixmap(pixmap);
     auto item = new JIGraphicsPixmapItem(&m_provider);
     item->setPixmapId(id);
 
-    const QSize ps = paperSizeWithOrientation();
-    item->setRect(QRectF(
-        ps.width()*0.3, ps.height()*0.3,
-        ps.width()*0.4, ps.height()*0.4
-        ));
+
+    item->setRect(defaultRectForNewItem());
     addItem(item);    
 }
 
 void JIGraphicsView::addTextItem(const JI::TextParams &textParams)
 {
     auto item = new JIGraphicsTextItem;
-    const QSize ps = paperSizeWithOrientation();
-    item->setRect(QRectF(
-        ps.width()*0.3, ps.height()*0.3,
-        ps.width()*0.4, ps.height()*0.4
-        ));
+    item->setRect(defaultRectForNewItem());
     item->setTextParams(textParams);
     addItem(item);
 }
@@ -100,6 +105,7 @@ void JIGraphicsView::contextMenuEvent(QContextMenuEvent *event) {
             m_scene.bringSelectedItemToBottom();
             emit itemsChanged();
         });
+        contextMenu->addAction(JIActions::getAction(JIActions::actDuplicateObject));
 //        auto actPreserveAspectRatio = contextMenu.addAction(tr("Preserve aspect ratio"));
 //        actPreserveAspectRatio->setCheckable(true);
 //        actPreserveAspectRatio->setChecked(item->preserveAspectRatio());
@@ -261,31 +267,39 @@ bool JIGraphicsView::fromJson(const QJsonObject &obj, const JsonFlags flags)
     while (it != itemsObj.constEnd()) {
         const ItemId id = it.key().toUInt();
         const QJsonObject itemObj = it.value().toObject();
-        const ItemType type = static_cast<ItemType>(itemObj[JIGraphicsItem::JK_TYPE].toInt());
-        qDebug()<<"Item type:"<<type<< JIGraphicsPixmapItem::Type << JIGraphicsTextItem::Type<<m_lastItemId;
-        JIGraphicsItem* item = nullptr;
-        switch (static_cast<int>(type)) {
-        case JIGraphicsPixmapItem::Type:
-            item = new JIGraphicsPixmapItem(&m_provider);
-            break;
-        case JIGraphicsTextItem::Type:
-            item = new JIGraphicsTextItem;
-            break;
-        default:
-            qWarning()<<"Unknown item type:"<<type;
-            break;
-        }
-        if (item) {
-            item->fromJson(itemObj);
-            addItemWithId(item,id);
-            qDebug()<<"Item with id:"<<id<<"added.  Last id:"<<m_lastItemId;
-        }
+        addItemFromJson(itemObj, id);
         ++it;
     }
     clearSelection();
     updateSceneSize();
     return true;
 }
+
+JIGraphicsItem* JIGraphicsView::addItemFromJson(const QJsonObject &itemObj, const int id)
+{
+    const ItemType type = static_cast<ItemType>(itemObj[JIGraphicsItem::JK_TYPE].toInt());
+    qDebug()<<"Item type:"<<type<< JIGraphicsPixmapItem::Type << JIGraphicsTextItem::Type<<m_lastItemId;
+    JIGraphicsItem* item = nullptr;
+    switch (static_cast<int>(type)) {
+    case JIGraphicsPixmapItem::Type:
+        item = new JIGraphicsPixmapItem(&m_provider);
+        break;
+    case JIGraphicsTextItem::Type:
+        item = new JIGraphicsTextItem;
+        break;
+    default:
+        qWarning()<<"Unknown item type:"<<type;
+        break;
+    }
+    if (item) {
+        item->fromJson(itemObj);
+        addItemWithId(item,id);
+        qDebug()<<"Item with id:"<<id<<"added.  Last id:"<<m_lastItemId;
+    }
+    return item;
+}
+
+
 
 void JIGraphicsView::onItemRotationChangedByUser(double rotation)
 {
@@ -318,6 +332,20 @@ void JIGraphicsView::sendItemsChangedIfAny()
     m_changedItems.clear();
     m_paperSizeChanged = false;
     emit itemsChanged();
+}
+
+void JIGraphicsView::duplicateSelectedObject()
+{
+    const auto item = selectedItem();
+    if (item)
+    {
+        const auto json = item->asJson();
+        const auto id = ++m_lastItemId;
+        JIGraphicsItem* newItem = addItemFromJson(json, id);
+        newItem->moveBy(newItem->rect().width()/10.0, newItem->rect().height()/10.0);
+        newItem->setSelected(true);
+        emit itemsChanged();
+    }
 }
 
 void JIGraphicsView::startItemsChangedTimer(const int msInterval)

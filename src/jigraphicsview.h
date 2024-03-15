@@ -65,7 +65,10 @@ private slots:
     void    onItemRotationChangedByUser(double rotation);
     void    onItemChanged();
     void    sendItemsChangedIfAny();
+    void    duplicateSelectedObject();
 protected:
+    QRectF defaultRectForNewItem() const;
+    JIGraphicsItem* addItemFromJson(const QJsonObject& itemObj, const int id);
     void startItemsChangedTimer(const int msInterval);
     void addItemWithId(JIGraphicsItem* item, const ItemId id);
     void addItem(JIGraphicsItem* item);

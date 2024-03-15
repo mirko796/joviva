@@ -126,5 +126,9 @@ void initActions()
         QObject::tr("Export As Image"),
         QKeySequence(),
         ":/add-image-icon.png");
+
+    createAction(
+        actDuplicateObject,
+        QObject::tr("Duplicate"));
 }
 }

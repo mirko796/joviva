@@ -22,7 +22,8 @@ enum Action {
     actShowButtonText,
     actAbout,
     actPaperSize,
-    actExportImage
+    actExportImage,
+    actDuplicateObject
 };
 void    initActions();
 QAction* getAction(Action action);
