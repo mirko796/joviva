@@ -76,6 +76,7 @@ private slots:
     void    setPaperSize();
     void    onPaperSizeDialogFinished(int result);
     void    exportAsImage();
+    void    onFilesDropped(const QStringList& files);
 
 };
 #endif // JIMAINWINDOW_H

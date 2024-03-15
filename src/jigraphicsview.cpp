@@ -7,10 +7,29 @@
 #include <QContextMenuEvent>
 #include <QCoreApplication>
 #include <QTimer>
+#include <QMimeData>
+#include <QFile>
+namespace {
+QStringList getLocalFilesFromMimeData(const QMimeData* mime)
+{
+    QStringList ret;
+    if (mime->hasUrls()) {
+        const QList<QUrl> urlList = mime->urls();
+        for (const auto& url : urlList) {
+            const QString localFile = url.toLocalFile();
+            if (QFile::exists(localFile)) {
+                ret.append(url.toLocalFile());
+            }
+        }
+    }
+    return ret;
+}
+}
 JIGraphicsView::JIGraphicsView(QWidget *parent) :
     QGraphicsView(parent)
 {
     setScene(&m_scene);
+    setAcceptDrops(true);
     m_documentSize.setSizeInPixels(JI::getPaperFormatInfo(JI::psA4).sizeInMM*10);
     m_documentSize.setPaperFormat(JI::psA4);
     m_documentSize.setOrientation(Qt::Vertical);
@@ -345,6 +364,29 @@ void JIGraphicsView::duplicateSelectedObject()
         newItem->moveBy(newItem->rect().width()/10.0, newItem->rect().height()/10.0);
         newItem->setSelected(true);
         emit itemsChanged();
+    }
+}
+
+void JIGraphicsView::dragEnterEvent(QDragEnterEvent *event) {
+    const QStringList files = getLocalFilesFromMimeData(event->mimeData());
+    if (files.isEmpty() == false) {
+        event->acceptProposedAction(); // Accept the drag event
+    }
+}
+
+void JIGraphicsView::dragMoveEvent(QDragMoveEvent *event)
+{
+    const QStringList files = getLocalFilesFromMimeData(event->mimeData());
+    if (files.isEmpty() == false) {
+        event->acceptProposedAction(); // Accept the drag event
+    }
+}
+
+void JIGraphicsView::dropEvent(QDropEvent *event) {
+    const QStringList files = getLocalFilesFromMimeData(event->mimeData());
+    if (files.isEmpty() == false) {
+        emit filesDropped(files);
+        event->acceptProposedAction();
     }
 }
 

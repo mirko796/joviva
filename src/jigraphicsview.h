@@ -61,12 +61,17 @@ signals:
     void    itemRotationChangedByUser(JIGraphicsItem* item, double rotation);
     void    itemsChanged();
     void    orientationChanged();
+    void    filesDropped(const QStringList& files);
 private slots:
     void    onItemRotationChangedByUser(double rotation);
     void    onItemChanged();
     void    sendItemsChangedIfAny();
     void    duplicateSelectedObject();
 protected:
+    void dragEnterEvent(QDragEnterEvent *event) override;
+    void dragMoveEvent(QDragMoveEvent *event) override;
+    void dropEvent(QDropEvent *event) override;
+
     QRectF defaultRectForNewItem() const;
     JIGraphicsItem* addItemFromJson(const QJsonObject& itemObj, const int id);
     void startItemsChangedTimer(const int msInterval);

@@ -65,6 +65,8 @@ JIMainWindow::JIMainWindow(QSettings *settings, const Translators& translators, 
             this, &JIMainWindow::onItemsChanged);
     connect(ui->graphicsView, &JIGraphicsView::orientationChanged,
             this, &JIMainWindow::updateActions);
+    connect(ui->graphicsView,&JIGraphicsView::filesDropped,
+            this, &JIMainWindow::onFilesDropped);
     ui->mw_sidebar->setGraphicsView(ui->graphicsView);
     ui->splitter->setSizes({100000,20});
 
@@ -507,6 +509,16 @@ void JIMainWindow::exportAsImage()
         desktopPath,
         "PNG Files (*.png)",
         "Untitled.png","png",bytes);
+}
+
+void JIMainWindow::onFilesDropped(const QStringList &files)
+{
+    foreach(const QString& fn, files) {
+        QPixmap pix(fn);
+        if (pix.width()>0) {
+            ui->graphicsView->addPixmapItem(pix);
+        }
+    }
 }
 
 void JIMainWindow::addText(const QString& text)

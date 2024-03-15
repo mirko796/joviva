@@ -13,9 +13,10 @@ public slots:
 private slots:
     void onSelectionChanged();
 private:
+    void drawBackground(QPainter *painter, const QRectF &rect) override;
+
     JIGraphicsItem* m_lastSelectedItem = nullptr;
     double m_selectedItemZValue = 0;
-    void drawBackground(QPainter *painter, const QRectF &rect) override;
 
 };
 
