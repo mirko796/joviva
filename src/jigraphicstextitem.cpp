@@ -31,8 +31,14 @@ void JIGraphicsTextItem::render(QPainter *painter)
     if (m_transparentBackground==false) {
         painter->fillRect(m_rect, Qt::white);
     }
-    painter->translate(m_rect.topLeft()-QPointF(br.x()*scaleX,br.y()*scaleY));
+    const int mirrorOffset = m_mirrored ? -m_rect.width() : 0;
+    painter->translate(m_rect.topLeft()-QPointF(mirrorOffset+br.x()*scaleX,br.y()*scaleY));
     painter->scale(scaleX, scaleY);
+    if (m_mirrored) {
+        auto transform = painter->transform();
+        transform.scale(-1,1);
+        painter->setTransform(transform);
+    }
     if (m_textParams.hollow) {
         painter->drawPath(path);
     } else {

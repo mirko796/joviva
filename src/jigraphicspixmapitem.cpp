@@ -52,5 +52,15 @@ QSizeF JIGraphicsPixmapItem::aspectRatio() const
 void JIGraphicsPixmapItem::render(QPainter *painter)
 {
     const auto pix = pixmap();
-    painter->drawPixmap(rect(), pix, pix.rect());
+    if (m_mirrored) {
+        painter->save();
+        painter->translate(m_rect.topRight());
+        auto transform = painter->transform();
+        transform.scale(-1, 1);
+        painter->setTransform(transform);
+        painter->drawPixmap(QRectF(QPoint(0,0),m_rect.size()), pix, pix.rect());
+        painter->restore();
+    } else {
+        painter->drawPixmap(rect(), pix, pix.rect());
+    }
 }

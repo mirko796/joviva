@@ -23,8 +23,12 @@ JISideBarWidget::JISideBarWidget(QWidget *parent) :
         ui->btn_right
         };
     m_textAlignButtons = {ui->btn_left, ui->btn_center, ui->btn_right};
-    connect(ui->sl_rotation, &QSlider::valueChanged, this, &JISideBarWidget::onRotationChanged);
+    connect(ui->sl_rotation, &QSlider::valueChanged, this, &JISideBarWidget::onRotationChangedViaSlider);
+    connect(ui->sb_rotation, &QSpinBox::valueChanged, this, &JISideBarWidget::onRotationChangedViaSlider);
     connect(ui->chb_transparent, &QCheckBox::stateChanged, this, &JISideBarWidget::onTransparentChangedByUser);
+    connect(ui->btn_rotateLeft, &QToolButton::clicked, this, &JISideBarWidget::rotateLeft);
+    connect(ui->btn_rotateRight, &QToolButton::clicked, this, &JISideBarWidget::rotateRight);
+    connect(ui->btn_mirror, &QToolButton::clicked, this, &JISideBarWidget::mirror);
 #ifdef Q_OS_WASM
     // disable text selection on wasm
     ui->pt_text->setTextInteractionFlags(Qt::TextEditable);
@@ -107,7 +111,11 @@ void JISideBarWidget::updateUI()
     auto selectedItem = m_graphicsView->selectedItem();
     ui->lbl_rotation->setVisible(selectedItem);
     ui->sl_rotation->setVisible(selectedItem);
+    ui->sb_rotation->setVisible(selectedItem);
     ui->chb_transparent->setVisible(selectedItem);
+    ui->btn_rotateLeft->setVisible(selectedItem);
+    ui->btn_rotateRight->setVisible(selectedItem);
+    ui->btn_mirror->setVisible(selectedItem);
     const JIGraphicsTextItem *textItem = dynamic_cast<JIGraphicsTextItem*>(selectedItem);
     if (selectedItem)
     {
@@ -167,7 +175,33 @@ void JISideBarWidget::updateTextItem()
     textItem->setTextParams(textParams);
 }
 
-void JISideBarWidget::onRotationChanged(int rotation)
+void JISideBarWidget::rotateLeft()
+{
+    int angle = (qCeil(ui->sb_rotation->value()/45.0)-1)*45;
+    angle = JI::normalizedAngle(angle);
+    ui->sb_rotation->setValue(angle);
+}
+
+void JISideBarWidget::rotateRight()
+{
+    int angle = (qFloor(ui->sb_rotation->value()/45.0)+1)*45;
+    angle = JI::normalizedAngle(angle);
+    ui->sb_rotation->setValue(angle);
+}
+
+void JISideBarWidget::mirror()
+{
+    if (m_graphicsView)
+    {
+        auto selectedItem = m_graphicsView->selectedItem();
+        if (selectedItem)
+        {
+            selectedItem->setMirrored(!selectedItem->isMirrored());
+        }
+    }
+}
+
+void JISideBarWidget::onRotationChangedViaSlider(int rotation)
 {
     if (m_graphicsView)
     {
@@ -177,6 +211,10 @@ void JISideBarWidget::onRotationChanged(int rotation)
             selectedItem->setRotation(rotation);
         }
     }
+    QSignalBlocker _b1(ui->sb_rotation);
+    ui->sb_rotation->setValue(rotation);
+    QSignalBlocker _b2(ui->sl_rotation);
+    ui->sl_rotation->setValue(rotation);
 }
 
 void JISideBarWidget::onRotationChangedByUser(JIGraphicsItem * /*item*/, double rotation)

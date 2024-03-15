@@ -25,7 +25,10 @@ public:
 private slots:
     void    updateUI();
     void    updateTextItem();
-    void    onRotationChanged(int rotation);
+    void    rotateLeft();
+    void    rotateRight();
+    void    mirror();
+    void    onRotationChangedViaSlider(int rotation);
     void    onRotationChangedByUser(JIGraphicsItem* item, double rotation);
     void    onTransparentChangedByUser(bool checked);
     void    onTextAlignButtonClicked();

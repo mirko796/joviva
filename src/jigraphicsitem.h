@@ -16,6 +16,7 @@ public:
     JSONKEY JK_TRANSPARENT = "transparent";
     JSONKEY JK_ZVALUE = "z";
     JSONKEY JK_TYPE = "type";
+    JSONKEY JK_MIRRORED = "mirrored";
     /**
      *  due to problem with transformOriginPoint we are storing
      *  both position of the item and position of the rect
@@ -64,6 +65,9 @@ public:
 
     void    setSortOrder(int newSortOrder);
     int     sortOrder() const;
+    bool isMirrored() const;
+    void setMirrored(bool newMirrored);
+
 signals:
     void    rotationChangedByUser(double newRotation);
     void    itemChanged();
@@ -101,6 +105,7 @@ protected:
     bool    m_drawRotateControl = true;
     bool    m_preserveAspectRatio = true;
     bool    m_transparentBackground = true;
+    bool    m_mirrored;
 };
 
 QDebug operator<<(QDebug dbg, const JIGraphicsItem::ControlPoint &point);

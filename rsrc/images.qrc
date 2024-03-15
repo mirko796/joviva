@@ -25,5 +25,8 @@
         <file>github-icon.png</file>
         <file>author-icon.png</file>
         <file>paper-size-icon.png</file>
+        <file>flip-icon.png</file>
+        <file>rotate-left-icon.png</file>
+        <file>rotate-right-icon.png</file>
     </qresource>
 </RCC>

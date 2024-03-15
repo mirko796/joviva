@@ -305,6 +305,18 @@ JIGraphicsItem::ControlPoint JIGraphicsItem::controlPointAt(const QPointF &pos) 
     return ControlPoint::Invalid;
 }
 
+bool JIGraphicsItem::isMirrored() const
+{
+    return m_mirrored;
+}
+
+void JIGraphicsItem::setMirrored(bool newMirrored)
+{
+    m_mirrored = newMirrored;
+    update();
+    emitItemChanged();
+}
+
 bool JIGraphicsItem::transparentBackground() const
 {
     return m_transparentBackground;
@@ -330,6 +342,7 @@ QJsonObject JIGraphicsItem::asJson() const
     ret[JK_TYPE] = type();
     ret[JK_POSX] = pos().x();
     ret[JK_POSY] = pos().y();
+    ret[JK_MIRRORED] = isMirrored();
     return ret;
 }
 
@@ -362,6 +375,8 @@ bool JIGraphicsItem::fromJson(const QJsonObject &obj)
         obj[JK_WIDTH].toDouble(),
         obj[JK_HEIGHT].toDouble()
         );
+    bool mirrored = obj.contains(JK_MIRRORED)?obj[JK_MIRRORED].toBool():false;
+    setMirrored(mirrored);
     const double rotation = JI::normalizedAngle(obj[JK_ROTATION].toDouble());
     setRotation(rotation);
     setTransparentBackground(obj[JK_TRANSPARENT].toBool());
