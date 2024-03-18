@@ -1,0 +1,9 @@
+set INNOPATH=C:\Program Files (x86)\Inno Setup 6
+set QTBASE=C:\Qt\6.6.2\msvc2019_64
+:: Change following path to match your Visual Studio installation
+set VCVARSALL=VCVARSALL=C:\Program Files (x86)\Microsoft Visual Studio\2019\Community\VC\Auxiliary\Build\vcvars64.bat
+
+set QTPATH=%QTBASE%\bin
+set JOM=%QTBASE%\..\..\Tools\QtCreator\bin\jom\jom.exe
+set CLEAN=nmake clean
+::set CLEAN=nmake noclean

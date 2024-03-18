@@ -12,6 +12,8 @@ greaterThan(QT_MAJOR_VERSION, 4): QT += widgets
 
 CONFIG += c++17
 
+RC_FILE = $$PWD/rsrc/app-icon.rc
+
 SRC_DIR = $$PWD/src
 INCLUDEPATH *= $$SRC_DIR
 SOURCES *= \
