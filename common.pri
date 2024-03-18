@@ -1,5 +1,5 @@
 # fetch version from ../../version.txt
-VERSION = $$cat(../../version.txt)
+VERSION = $$cat($$PWD/version.txt)
 DEFINES += APP_VERSION=\\\"$$VERSION\\\"
 # get git commit hash
 GIT_COMMIT = $$system(git rev-parse HEAD)
