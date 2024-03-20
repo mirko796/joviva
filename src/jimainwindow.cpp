@@ -13,6 +13,7 @@
 #include <QBuffer>
 #include <QPlainTextEdit>
 #include "jiactions.h"
+#include <QProcessEnvironment>
 using namespace JIActions;
 
 #ifdef Q_OS_WASM
@@ -559,7 +560,11 @@ void saveFileFromResourceToLocal(const QString &resourcePath, const QString &loc
 }
 void JIMainWindow::createDesktopIconOnLinux()
 {
-    const QString appPath = qApp->applicationFilePath();
+    // when running from appimage container this should be set and used as target for shortcut
+    const QString appImagePath = QProcessEnvironment::systemEnvironment().value("APPIMAGE");
+
+    const QString appPath = appImagePath.isEmpty() ? qApp->applicationFilePath() : appImagePath;
+
     const QString appDataPath = QStandardPaths::writableLocation(QStandardPaths::AppDataLocation);
     QDir d(appDataPath);
     if (d.exists()==false) {
