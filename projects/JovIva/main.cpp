@@ -28,7 +28,7 @@ int main(int argc, char *argv[])
 //            break;
 //        }
 //    }
-    QSettings settings;
+    QSettings settings("JovIva");
     JIMainWindow w(&settings,translators);
     w.show();
     // load from first param if provided
