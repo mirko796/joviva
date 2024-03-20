@@ -1,6 +1,8 @@
 #include "jiactions.h"
+#include <QActionGroup>
 namespace JIActions {
 QHash<Action, QAction*> g_actions;
+QActionGroup g_iconSizeGroup(nullptr);
 QAction* getAction(Action action)
 {
     if (g_actions.isEmpty()) {
@@ -130,5 +132,17 @@ void initActions()
     createAction(
         actDuplicateObject,
         QObject::tr("Duplicate"));
+
+    createAction(
+        actBigIcons,
+        QObject::tr("Big Icons"));
+    g_actions[actBigIcons]->setCheckable(true);
+
+    createAction(
+        actSmallIcons,
+        QObject::tr("Small Icons"));
+    g_actions[actSmallIcons]->setCheckable(true);
+    g_iconSizeGroup.addAction(g_actions[actSmallIcons]);
+    g_iconSizeGroup.addAction(g_actions[actBigIcons]);
 }
 }

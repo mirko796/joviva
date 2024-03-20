@@ -99,6 +99,7 @@ void JIMainWindow::loadFromSettings()
             action->trigger();
         }
     }
+    JIMainWindow::updateButtonsTextVisibility();
 }
 
 void JIMainWindow::updateWindowTitle()
@@ -426,8 +427,16 @@ void JIMainWindow::updateButtonsTextVisibility()
 {
     const auto buttons = findChildren<QToolButton*>();
     const bool textVisible = getAction(actShowButtonText)->isChecked();
+    QSize iconSize(24,24);
+    if (getAction(JIActions::actSmallIcons)->isChecked()) {
+        iconSize = QSize(16,16);
+    }
+    auto actBig = getAction(JIActions::actBigIcons);
+    QSignalBlocker _b1(actBig);
+    actBig->setChecked(iconSize.width()==24);
+
     for (auto button: buttons) {
-        button->setIconSize(QSize(24,24));
+        button->setIconSize(iconSize);
         button->setToolButtonStyle(textVisible ? Qt::ToolButtonTextUnderIcon : Qt::ToolButtonIconOnly);
     }
     m_settings->setValue(JI::SettingsKeyShowButtonTexts, textVisible);
@@ -454,6 +463,7 @@ void JIMainWindow::onLanguageActionTriggered()
     }
     m_settings->setValue(JI::SettingsKeyLanguage,newLang);
     ui->retranslateUi(this);
+    updateWindowTitle();
 }
 
 void JIMainWindow::about()
@@ -622,6 +632,9 @@ void JIMainWindow::initActions()
     connectAction(actPaperSize, &JIMainWindow::setPaperSize);
     connectAction(actExportImage, &JIMainWindow::exportAsImage);
 
+    connectAction(actBigIcons, &JIMainWindow::updateButtonsTextVisibility);
+    connectAction(actSmallIcons, &JIMainWindow::updateButtonsTextVisibility);
+
 }
 
 void JIMainWindow::initMainMenu()
@@ -650,6 +663,9 @@ void JIMainWindow::initMainMenu()
     viewMenu->addAction(getAction(actLandscape));
     viewMenu->addSeparator();
     viewMenu->addAction(getAction(actShowButtonText));
+    viewMenu->addSeparator();
+    viewMenu->addAction(getAction(actSmallIcons));
+    viewMenu->addAction(getAction(actBigIcons));
     viewMenu->addSeparator();
     m_languageMenu = viewMenu->addMenu(tr("Languages"));
     for (const auto& lang: m_translators.keys()) {
