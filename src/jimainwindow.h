@@ -77,7 +77,10 @@ private slots:
     void    onPaperSizeDialogFinished(int result);
     void    exportAsImage();
     void    onFilesDropped(const QStringList& files);
+#ifdef Q_OS_LINUX
     void    createDesktopIconOnLinux();
+#endif
 
 };
 #endif // JIMAINWINDOW_H
+

@@ -20,18 +20,10 @@ int main(int argc, char *argv[])
         translators["Srpski"] = serbian;
     }
     translators["English"].reset(new QTranslator());
-//    const QStringList uiLanguages = QLocale::system().uiLanguages();
-//    for (const QString &locale : uiLanguages) {
-//        const QString baseName = "SimpleLayout_" + QLocale(locale).name();
-//        if (translator.load(":/i18n/" + baseName)) {
-//            a.installTranslator(&translator);
-//            break;
-//        }
-//    }
     QSettings settings("JovIva");
     JIMainWindow w(&settings,translators);
     w.show();
-    // load from first param if provided
+    // load document from first param if provided
     if (argc > 1)
     {
         w.loadFile(argv[1]);
