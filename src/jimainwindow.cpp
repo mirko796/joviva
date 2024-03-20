@@ -79,6 +79,7 @@ JIMainWindow::JIMainWindow(QSettings *settings, const Translators& translators, 
 
 JIMainWindow::~JIMainWindow()
 {
+    m_settings->sync();
 #ifdef Q_OS_WASM
     g_mainWindow = nullptr;
 #endif
@@ -89,6 +90,9 @@ void JIMainWindow::loadFromSettings()
 {
     getAction(actShowButtonText)->setChecked(
         m_settings->value(JI::SettingsKeyShowButtonTexts, false).toBool()
+        );
+    getAction(JIActions::actSmallIcons)->setChecked(
+        m_settings->value(JI::SettingsKeyUseSmallIcons, false).toBool()
         );
     const QString lang = m_settings->value(JI::SettingsKeyLanguage, "").toString();
     foreach(QAction* action, m_languageMenu->actions()) {
@@ -440,6 +444,7 @@ void JIMainWindow::updateButtonsTextVisibility()
         button->setToolButtonStyle(textVisible ? Qt::ToolButtonTextUnderIcon : Qt::ToolButtonIconOnly);
     }
     m_settings->setValue(JI::SettingsKeyShowButtonTexts, textVisible);
+    m_settings->setValue(JI::SettingsKeyUseSmallIcons, iconSize.width()==16);
 }
 
 void JIMainWindow::onLanguageActionTriggered()

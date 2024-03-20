@@ -12,6 +12,7 @@ namespace JI
 constexpr int DefaultFontSize = 128;
 constexpr char DefaultExtension[] = "ji";
 constexpr char SettingsKeyShowButtonTexts[] = "showbuttontexts";
+constexpr char SettingsKeyUseSmallIcons[] = "usesmallicons";
 constexpr char SettingsKeyLanguage[] = "language";
 struct TextParams
 {
