@@ -536,6 +536,92 @@ void JIMainWindow::onFilesDropped(const QStringList &files)
     }
 }
 
+#ifdef Q_OS_LINUX
+void saveFileFromResourceToLocal(const QString &resourcePath, const QString &localFilePath) {
+    QFile resourceFile(resourcePath);
+    if (!resourceFile.exists()) {
+        qDebug() << "Resource file does not exist.";
+        return;
+    }
+    if (!resourceFile.open(QIODevice::ReadOnly)) {
+        qDebug() << "Failed to open resource file for reading.";
+        return;
+    }
+    QFile localFile(localFilePath);
+    if (!localFile.open(QIODevice::WriteOnly)) {
+        qDebug() << "Failed to open local file for writing.";
+        return;
+    }
+    QByteArray data = resourceFile.readAll();
+    localFile.write(data);
+    resourceFile.close();
+    localFile.close();
+}
+void JIMainWindow::createDesktopIconOnLinux()
+{
+    const QString appPath = qApp->applicationFilePath();
+    const QString appDataPath = QStandardPaths::writableLocation(QStandardPaths::AppDataLocation);
+    QDir d(appDataPath);
+    if (d.exists()==false) {
+        d.mkdir(appDataPath);
+    }
+    const QString desktopPath = QStandardPaths::writableLocation(QStandardPaths::DesktopLocation);
+    const QString appShortcutPath = desktopPath+"/JovIva.desktop";
+    if (QFile::exists(appShortcutPath)) {
+        const int btn = QMessageBox::question(
+            this,
+            tr("Confirm"),
+            tr("The shortuct already exists on your desktop.\nDo you want to replace it?")
+            );
+        if (btn!=QMessageBox::Yes) {
+            return;
+        }
+    }
+
+    const QString appIconPath = appDataPath+"/joviva.png";
+    const QStringList desktopEntry = {
+        "[Desktop Entry]",
+        "Version=1.0",
+        "Type=Application",
+        QString("Name=%1").arg(qApp->applicationName()),
+        "Comment=Simple image manipulation program ( https://github.com/mirko796/joviva )",
+        QString("Exec=%1").arg(appPath),
+        QString("Icon=%1").arg(appIconPath),
+        "Terminal=false",
+        "StartupNotify=true"
+    };
+    qDebug()<<appPath<<" data:"<<appDataPath;
+    /* copy icon to local file system under appData path */
+    saveFileFromResourceToLocal(":/app-icon.png",appIconPath);
+    const bool fileCopied = QFile::exists(appIconPath);
+    if (!fileCopied) {
+        QMessageBox::warning(this,
+                             "Error",
+                             "Failed to save app icon!\nFile name: "+appIconPath);
+    }
+
+    /* save desktop entry to appShortcutPath on desktop */
+    QFile f(appShortcutPath);
+    if (f.open(QIODevice::WriteOnly)) {
+        f.write(desktopEntry.join("\n").toLatin1());
+        f.close();
+        f.setPermissions(f.permissions()|
+                         QFile::ExeOwner|
+                         QFile::ExeUser|
+                         QFile::ExeGroup|
+                         QFile::ExeOther);
+        QMessageBox::information(this,
+                                 qApp->applicationName(),
+                                 "Shortcut created.\nFile name: "+appShortcutPath);
+    } else {
+        QMessageBox::warning(this,
+                             "Error",
+                             "Failed to create shortcut on your desktop!\nFile name: "+appShortcutPath);
+    }
+    qDebug()<<"File copied to:"<<appIconPath<<fileCopied;
+
+}
+#endif
 void JIMainWindow::addText(const QString& text)
 {
     JI::TextParams params;
@@ -639,7 +725,9 @@ void JIMainWindow::initActions()
 
     connectAction(actBigIcons, &JIMainWindow::updateButtonsTextVisibility);
     connectAction(actSmallIcons, &JIMainWindow::updateButtonsTextVisibility);
-
+#ifdef Q_OS_LINUX
+    connectAction(actCreateDesktopIcon, &JIMainWindow::createDesktopIconOnLinux);
+#endif
 }
 
 void JIMainWindow::initMainMenu()
@@ -679,7 +767,10 @@ void JIMainWindow::initMainMenu()
         m_languageMenu->addAction(action);
         connect( action, &QAction::triggered, this, &JIMainWindow::onLanguageActionTriggered);
     }
-
+    viewMenu->addSeparator();
+#ifdef Q_OS_LINUX
+    viewMenu->addAction(getAction(actCreateDesktopIcon));
+#endif
     QMenu* helpMenu = menuBar()->addMenu(tr("&Help"));
     helpMenu->addAction(getAction(actAbout));
 }

@@ -55,7 +55,7 @@ JIGraphicsItem::JIGraphicsItem(QGraphicsItem *parent) :
 
 void JIGraphicsItem::paint(QPainter *painter, const QStyleOptionGraphicsItem *option, QWidget *widget)
 {
-
+    Q_UNUSED(widget);
     render(painter);
     if (option->state & QStyle::State_Selected) {
         // draw control points

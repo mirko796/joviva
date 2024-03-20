@@ -144,5 +144,10 @@ void initActions()
     g_actions[actSmallIcons]->setCheckable(true);
     g_iconSizeGroup.addAction(g_actions[actSmallIcons]);
     g_iconSizeGroup.addAction(g_actions[actBigIcons]);
+
+    createAction(
+        actCreateDesktopIcon,
+        QObject::tr("Create Desktop Icon"));
+
 }
 }

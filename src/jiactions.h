@@ -25,7 +25,8 @@ enum Action {
     actExportImage,
     actDuplicateObject,
     actBigIcons,
-    actSmallIcons
+    actSmallIcons,
+    actCreateDesktopIcon
 };
 void    initActions();
 QAction* getAction(Action action);
