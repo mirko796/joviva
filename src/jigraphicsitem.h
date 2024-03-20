@@ -105,7 +105,7 @@ protected:
     bool    m_drawRotateControl = true;
     bool    m_preserveAspectRatio = true;
     bool    m_transparentBackground = true;
-    bool    m_mirrored;
+    bool    m_mirrored = false;
 };
 
 QDebug operator<<(QDebug dbg, const JIGraphicsItem::ControlPoint &point);
