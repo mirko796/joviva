@@ -113,7 +113,7 @@ background-color: white;
          <normaloff>:/rotate-left-icon.png</normaloff>:/rotate-left-icon.png</iconset>
        </property>
        <property name="checkable">
-        <bool>true</bool>
+        <bool>false</bool>
        </property>
       </widget>
      </item>
@@ -127,7 +127,7 @@ background-color: white;
          <normaloff>:/rotate-right-icon.png</normaloff>:/rotate-right-icon.png</iconset>
        </property>
        <property name="checkable">
-        <bool>true</bool>
+        <bool>false</bool>
        </property>
       </widget>
      </item>
