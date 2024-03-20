@@ -415,7 +415,6 @@ void JIMainWindow::undo()
 void JIMainWindow::redo()
 {
     if (m_undoRedo.redo()) {
-        // TODO: use scope quard for this
         m_restoring = true;
         auto view = ui->graphicsView;
         auto data = m_undoRedo.head();
