@@ -27,10 +27,12 @@ INSTALLS += target
 
 wasm {
 message("Wasm build");
-# when build is done copy index.html from html to out folder
+# when build is done copy index.html from html to out folder and app-icon.png to favicon.png
 INDEX_HTML = $$PWD/../../html/index.html
 message("Index html path" $$INDEX_HTML);
-QMAKE_POST_LINK += $$quote(cp $$INDEX_HTML $$DESTDIR)
+APPICON_PATH = $$PWD/../../rsrc/favicon.ico
+message("App icon path" $$APPICON_PATH);
+QMAKE_POST_LINK += $$quote(cp $$APPICON_PATH $$INDEX_HTML $$DESTDIR)
 }
 mac {
 # build for both architectures
