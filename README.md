@@ -3,7 +3,7 @@
 </p>
 
 # JovIva
-A simple and lightweight image manipulation tool created with modest intention to simplify creating and printing kids coloring pages so even a child can use it. \
+A simple and lightweight image manipulation tool created with modest intention to simplify arranging and printing coloring pages so even a child can use it. \
 This is a low-effort project that I created for my kids to have fun with. It does not strive to be a professional tool, but rather a simple and usable one. \
 The app is written C++ with Qt6 framework which guarantees very good multiplatform support, yet I was really suprised how easy it was to make WASM version with only some minimal tweaks on the browser-side JavaScript code.
 I haven't spent too much time on making the code super clean and well-structured, but it should be easy to understand and extend. Same goes for testing, there are some basic tests but don't expect any decent code coverage :) 
