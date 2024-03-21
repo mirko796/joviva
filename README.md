@@ -12,7 +12,7 @@ I haven't spent too much time on making the code super clean and well-structured
 You can try it online [here](https://mrcode.dev/joviva/)
 
 ## Download
-Head to the [releases](...) and pick binary for your system
+Head to the [releases](https://github.com/mirko796/joviva/releases) and pick binary for your system
 
 ## Goals and non-goals
 Main goals from user perspective were:
