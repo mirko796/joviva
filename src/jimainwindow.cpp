@@ -416,7 +416,6 @@ void JIMainWindow::undo()
 void JIMainWindow::redo()
 {
     if (m_undoRedo.redo()) {
-        // TODO: use scope quard for this
         m_restoring = true;
         auto view = ui->graphicsView;
         auto data = m_undoRedo.head();
@@ -529,6 +528,17 @@ void JIMainWindow::exportAsImage()
 
 void JIMainWindow::onFilesDropped(const QStringList &files)
 {
+    // first check do we have ".ji" file, if so open it
+    const QString extension = QString(".%1").arg(JI::DefaultExtension);
+    foreach(const QString& fn, files) {
+        if (fn.toLower().endsWith(extension)) {
+            auto onProceed = [this,fn]() {
+                loadFile(fn);
+            };
+            ensureAllSaved(onProceed);
+            return;
+        }
+    }
     foreach(const QString& fn, files) {
         QPixmap pix(fn);
         if (pix.width()>0) {

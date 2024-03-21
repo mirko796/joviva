@@ -3,10 +3,7 @@
 #include "jigraphicsview.h"
 #include "jigraphicstextitem.h"
 #include <QScopeGuard>
-// TODO: add 4 rotation presets 0,90,180,270
-// TODO: add bring to front, send to back
-// TODO: add preserve aspect ratio
-// TODO: add text option
+
 JISideBarWidget::JISideBarWidget(QWidget *parent) :
     QWidget(parent),
     ui(new Ui::JISideBarWidget)

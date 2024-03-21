@@ -17,10 +17,7 @@ uint qHash(const JIGraphicsItem::ControlPoint &point, uint seed)
 {
     return qHash(int(point),seed);
 }
-// DONE: fix rotate
-// DONE: fix resize when rotated
-// TODO: right click resets rotation
-// TODO: preserve aspect ratio when resize
+
 const QSet<JIGraphicsItem::ControlPoint>& JIGraphicsItem::controlPoints()
 {
     static QSet<JIGraphicsItem::ControlPoint> ret;
